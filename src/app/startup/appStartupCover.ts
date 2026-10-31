@@ -9,17 +9,17 @@ let calculatorFirstPaintAssetsPromise: Promise<void> | null = null;
 let appStartupReadyMarked = false;
 
 export function preloadCalculatorFirstPaintAssets(): Promise<void> {
-    calculatorFirstPaintAssetsPromise ??= (async () => {
-        const results = await Promise.allSettled(
-            calculatorFirstPaintAssets.map((path) => preloadImage(assetUrl(path))),
-        );
-
-        for (const result of results) {
-            if (result.status === "rejected") {
-                console.warn("Calculator startup image was not preloaded.", result.reason);
-            }
-        }
-    })();
+    if (calculatorFirstPaintAssetsPromise === null) {
+        calculatorFirstPaintAssetsPromise = Promise.all(
+            calculatorFirstPaintAssets.map(async (path) => {
+                try {
+                    await preloadImage(assetUrl(path));
+                } catch (error) {
+                    console.warn("Calculator startup image was not preloaded.", error);
+                }
+            }),
+        ).then(() => undefined);
+    }
 
     return calculatorFirstPaintAssetsPromise;
 }
@@ -74,7 +74,9 @@ async function preloadImage(src: string): Promise<void> {
 }
 
 async function waitForFontsReady(): Promise<void> {
-    await document.fonts?.ready;
+    if (document.fonts) {
+        await document.fonts.ready;
+    }
 }
 
 function waitForAnimationFrame(): Promise<void> {

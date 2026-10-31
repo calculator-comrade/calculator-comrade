@@ -1,7 +1,7 @@
 import { assetUrl } from "../shared/assetUrl.ts";
 import type { CalculatorWasmModule } from "./calculatorWasmTypes.ts";
 
-const CALCULATOR_SCRIPT_URL = assetUrl("wasm/calculator.js");
+const CALCULATOR_SCRIPT_URL = assetUrl("wasm/calculator.compat.js");
 const CALCULATOR_WASM_URL = assetUrl("wasm/calculator.wasm");
 
 let loadingPromise: Promise<CalculatorWasmModule> | undefined;

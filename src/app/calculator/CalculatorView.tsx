@@ -30,35 +30,58 @@ function CalculatorView({
     onAppButtonPressStart,
     settingsButtonAttention,
 }: CalculatorViewProps) {
-    const shellRef = useRef<HTMLDivElement | null>(null);
+    const viewRef = useRef<HTMLElement | null>(null);
     const [scale, setScale] = useState<number | null>(null);
 
     useLayoutEffect(() => {
-        const shell = shellRef.current;
+        const view = viewRef.current;
 
-        if (!shell) {
+        if (!view) {
             return;
         }
 
-        const updateScale = () => {
-            const rect = shell.getBoundingClientRect();
+        const app = view.parentElement;
 
-            setScale(rect.width / CALCULATOR_BODY_WIDTH);
+        if (!app) {
+            return;
+        }
+
+        const updateLayout = () => {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            const paddingX = Math.min(16, Math.max(8, viewportWidth * 0.03));
+            const paddingY = Math.min(16, Math.max(8, viewportHeight * 0.012));
+
+            const availableWidth = Math.max(0, viewportWidth - paddingX * 2);
+            const availableHeight = Math.max(0, viewportHeight - paddingY * 2);
+            const nextScale = Math.min(
+                availableWidth / CALCULATOR_BODY_WIDTH,
+                availableHeight / CALCULATOR_BODY_HEIGHT,
+            );
+
+            const shellWidth = CALCULATOR_BODY_WIDTH * nextScale;
+            const shellHeight = CALCULATOR_BODY_HEIGHT * nextScale;
+
+            app.style.setProperty("--calculator-viewport-padding-x", `${paddingX}px`);
+            app.style.setProperty("--calculator-viewport-padding-y", `${paddingY}px`);
+            app.style.setProperty("--calculator-shell-width", `${shellWidth}px`);
+            app.style.setProperty("--calculator-shell-height", `${shellHeight}px`);
+
+            setScale(nextScale);
         };
 
-        updateScale();
-
-        const resizeObserver = new ResizeObserver(updateScale);
-        resizeObserver.observe(shell);
+        updateLayout();
+        window.addEventListener("resize", updateLayout);
 
         return () => {
-            resizeObserver.disconnect();
+            window.removeEventListener("resize", updateLayout);
         };
     }, []);
 
     return (
-        <section className="calculator-view" aria-label="Calculator">
-            <div ref={shellRef} className="calculator-shell">
+        <section ref={viewRef} className="calculator-view" aria-label="Calculator">
+            <div className="calculator-shell">
                 {scale !== null && (
                     <div
                         className="calculator-stage"
