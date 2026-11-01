@@ -1,3 +1,9 @@
+.calculator-view,
+.calculator-view * {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 .calculator-view {
     display: flex;
     align-items: center;

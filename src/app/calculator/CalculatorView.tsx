@@ -1,5 +1,5 @@
 import { assetUrl } from "../../shared/assetUrl.ts";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CalculatorAppButtons } from "./CalculatorAppButtons.tsx";
 import { CalculatorDisplay } from "./CalculatorDisplay.tsx";
 import { CalculatorKeyboard } from "./CalculatorKeyboard.tsx";
@@ -32,6 +32,19 @@ function CalculatorView({
 }: CalculatorViewProps) {
     const viewRef = useRef<HTMLElement | null>(null);
     const [scale, setScale] = useState<number | null>(null);
+
+    useEffect(() => {
+        const view = viewRef.current;
+
+        if (!view) {
+            return;
+        }
+
+        const preventSelection = (event: Event) => event.preventDefault();
+        view.addEventListener("selectstart", preventSelection);
+
+        return () => view.removeEventListener("selectstart", preventSelection);
+    }, []);
 
     useLayoutEffect(() => {
         const view = viewRef.current;
