@@ -1,7 +1,7 @@
 {
   "name": "calculator-comrade",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1-rc.0",
   "type": "module",
   "engines": {
     "node": ">=24"
