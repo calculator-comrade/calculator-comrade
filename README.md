@@ -159,8 +159,8 @@ selected platform.
 
 ### Linux host build
 
-On Ubuntu 24.04, install the Tauri build dependencies and ALSA development
-files required by the native desktop sound backend:
+On Ubuntu 24.04 or Ubuntu 26.04, install the Tauri build dependencies and
+ALSA development files required by the native desktop sound backend:
 
 ```bash
 sudo apt update
@@ -169,6 +169,7 @@ sudo apt install \
   curl \
   wget \
   file \
+  libxdo-dev \
   libssl-dev \
   libgtk-3-dev \
   libayatana-appindicator3-dev \
@@ -178,6 +179,11 @@ sudo apt install \
   libwebkit2gtk-4.1-dev \
   libasound2-dev
 ```
+
+On Ubuntu 26.04, `libgtk-3-dev` provides GTK/Pango/Cairo build metadata,
+`libwebkit2gtk-4.1-dev` provides WebKitGTK and libsoup development files, and
+`librsvg2-dev` is also needed by the `linuxdeploy` GTK plugin when packaging
+AppImage.
 
 On Ubuntu 24.04 and newer, the runtime ALSA package is usually
 `libasound2t64`. On Ubuntu 22.04 and older, it is usually `libasound2`.
