@@ -6,7 +6,7 @@ application, GitHub Pages site, PWA files, legal/support pages, and desktop
 wrappers for Linux and Windows.
 
 The calculator engine is developed as our separate open-source library
-[calculator-comrade-lib](https://github.com/DmitryDzz/calculator-comrade-lib).
+[calculator-comrade-lib](https://github.com/calculator-comrade/calculator-comrade-lib).
 
 This repository contains the product/application layer built around that
 library.
@@ -89,9 +89,9 @@ Install the project dependencies from the lock file:
 npm ci
 ```
 
-A reasonably recent Node.js version is required by the frontend toolchain.
-If an older Node.js version is selected on the machine, switch to a newer one
-before running `npm ci`.
+Node.js 24 or newer is required by the frontend toolchain.
+If an older Node.js version is selected on the machine, switch to Node.js 24
+or newer before running `npm ci`.
 
 The desktop build also requires Rust and Cargo. Install them with `rustup` if
 they are not already available on the host machine.
@@ -252,5 +252,5 @@ The installer file name is based on the Tauri product name, version and target
 architecture, for example:
 
 ```text
-Calculator Comrade_0.0.1_x64-setup.exe
+Calculator Comrade_1.0.0_x64-setup.exe
 ```

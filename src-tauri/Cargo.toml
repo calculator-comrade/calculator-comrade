@@ -1,10 +1,10 @@
 [package]
 name = "calculator-comrade"
-version = "0.0.1"
+version = "1.0.0"
 description = "Classic pocket calculator emulator"
 authors = ["Dmitry Dzakhov"]
 license = "MIT"
-repository = "https://github.com/DmitryDzz/calculator-comrade"
+repository = "https://github.com/calculator-comrade/calculator-comrade"
 edition = "2021"
 rust-version = "1.77.2"
 

@@ -14,11 +14,11 @@ import {
 } from "./desktopCalculatorStorage.ts";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-const DESKTOP_HOME_URL = "https://dmitrydzz.github.io/calculator-comrade/";
-const DESKTOP_HELP_URL = "https://dmitrydzz.github.io/calculator-comrade/tips-n-tricks/";
-const DESKTOP_LICENSE_URL = "https://dmitrydzz.github.io/calculator-comrade/license/";
-const DESKTOP_PRIVACY_POLICY_URL = "https://dmitrydzz.github.io/calculator-comrade/privacy-policy/";
-const DESKTOP_TERMS_OF_USE_URL = "https://dmitrydzz.github.io/calculator-comrade/terms-of-use/";
+const DESKTOP_HOME_URL = "https://calculator-comrade.github.io/calculator-comrade/";
+const DESKTOP_HELP_URL = "https://calculator-comrade.github.io/calculator-comrade/tips-n-tricks/";
+const DESKTOP_LICENSE_URL = "https://calculator-comrade.github.io/calculator-comrade/license/";
+const DESKTOP_PRIVACY_POLICY_URL = "https://calculator-comrade.github.io/calculator-comrade/privacy-policy/";
+const DESKTOP_TERMS_OF_USE_URL = "https://calculator-comrade.github.io/calculator-comrade/terms-of-use/";
 
 function openExternalUrl(url: string): void {
     void openUrl(url).catch((error: unknown) => {

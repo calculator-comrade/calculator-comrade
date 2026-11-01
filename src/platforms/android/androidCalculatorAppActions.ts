@@ -19,11 +19,11 @@ import { Browser } from "@capacitor/browser";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { Share } from "@capacitor/share";
 
-const ANDROID_HOME_URL = "https://dmitrydzz.github.io/calculator-comrade/";
-const ANDROID_HELP_URL = "https://dmitrydzz.github.io/calculator-comrade/tips-n-tricks/";
-const ANDROID_LICENSE_URL = "https://dmitrydzz.github.io/calculator-comrade/license/";
-const ANDROID_PRIVACY_POLICY_URL = "https://dmitrydzz.github.io/calculator-comrade/privacy-policy/";
-const ANDROID_TERMS_OF_USE_URL = "https://dmitrydzz.github.io/calculator-comrade/terms-of-use/";
+const ANDROID_HOME_URL = "https://calculator-comrade.github.io/calculator-comrade/";
+const ANDROID_HELP_URL = "https://calculator-comrade.github.io/calculator-comrade/tips-n-tricks/";
+const ANDROID_LICENSE_URL = "https://calculator-comrade.github.io/calculator-comrade/license/";
+const ANDROID_PRIVACY_POLICY_URL = "https://calculator-comrade.github.io/calculator-comrade/privacy-policy/";
+const ANDROID_TERMS_OF_USE_URL = "https://calculator-comrade.github.io/calculator-comrade/terms-of-use/";
 
 export function createAndroidCalculatorAppActions(
     options: CreateCalculatorAppActionsOptions = {},

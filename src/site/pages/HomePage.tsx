@@ -56,7 +56,7 @@ export function HomePage() {
                         The project is split into two open source repositories. The calculator engine
                         lives in{" "}
                         <a
-                            href="https://github.com/DmitryDzz/calculator-comrade-lib"
+                            href="https://github.com/calculator-comrade/calculator-comrade-lib"
                             target="_blank"
                             rel="noreferrer"
                         >
@@ -69,7 +69,7 @@ export function HomePage() {
                     <p>
                         The{" "}
                         <a
-                            href="https://github.com/DmitryDzz/calculator-comrade"
+                            href="https://github.com/calculator-comrade/calculator-comrade"
                             target="_blank"
                             rel="noreferrer"
                         >

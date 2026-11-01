@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Calculator Comrade",
-  "version": "0.0.1",
-  "identifier": "io.github.dmitrydzz.calculator-comrade",
+  "version": "../package.json",
+  "identifier": "io.github.calculator-comrade",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://127.0.0.1:5174",

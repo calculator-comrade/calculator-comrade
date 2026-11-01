@@ -1,9 +1,14 @@
 {
   "name": "calculator-comrade",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
+    "version": "node scripts/sync-app-version.js",
+    "version:sync": "node scripts/sync-app-version.js",
     "build": "tsc -b && vite build",
     "build:pages": "tsc -b && vite build --mode pages && node scripts/create-404.js",
     "build:desktop": "tsc -b && vite build --mode desktop",
