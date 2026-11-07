@@ -1,13 +1,25 @@
 (function () { if (typeof globalThis === "undefined") { window.globalThis = window; } }());
 "use strict";
 var createCalculatorModule = (() => {
-    var _a, _b;
-    var _scriptName = (_b = (_a = globalThis.document) === null || _a === void 0 ? void 0 : _a.currentScript) === null || _b === void 0 ? void 0 : _b.src;
-    return async function (moduleArg = {}) {
+    var _a;
+    var _scriptName = typeof document != 'undefined' ? (_a = document.currentScript) === null || _a === void 0 ? void 0 : _a.src : undefined;
+    return (function (moduleArg = {}) {
         var moduleRtn;
+        function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+        function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
+        function _toPrimitive(t, r) { if ("object" != typeof t || !t)
+            return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) {
+            var i = e.call(t, r || "default");
+            if ("object" != typeof i)
+                return i;
+            throw new TypeError("@@toPrimitive must return a primitive value.");
+        } return ("string" === r ? String : Number)(t); }
         var Module = moduleArg;
+        var readyPromiseResolve, readyPromiseReject;
+        var readyPromise = new Promise((resolve, reject) => { readyPromiseResolve = resolve; readyPromiseReject = reject; });
         var ENVIRONMENT_IS_WEB = true;
         var ENVIRONMENT_IS_WORKER = false;
+        var moduleOverrides = Object.assign({}, Module);
         var arguments_ = [];
         var thisProgram = "./this.program";
         var scriptDirectory = "";
@@ -16,10 +28,21 @@ var createCalculatorModule = (() => {
         } return scriptDirectory + path; }
         var readAsync, readBinary;
         if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-            try {
-                scriptDirectory = new URL(".", _scriptName).href;
+            if (ENVIRONMENT_IS_WORKER) {
+                scriptDirectory = self.location.href;
             }
-            catch (_a) { }
+            else if (typeof document != "undefined" && document.currentScript) {
+                scriptDirectory = document.currentScript.src;
+            }
+            if (_scriptName) {
+                scriptDirectory = _scriptName;
+            }
+            if (scriptDirectory.startsWith("blob:")) {
+                scriptDirectory = "";
+            }
+            else {
+                scriptDirectory = scriptDirectory.substr(0, scriptDirectory.replace(/[?#].*/, "").lastIndexOf("/") + 1);
+            }
             {
                 readAsync = async (url) => { var response = await fetch(url, { credentials: "same-origin" }); if (response.ok) {
                     return response.arrayBuffer();
@@ -27,35 +50,58 @@ var createCalculatorModule = (() => {
             }
         }
         else { }
-        var out = console.log.bind(console);
-        var err = console.error.bind(console);
-        var wasmBinary;
+        var out = Module["print"] || console.log.bind(console);
+        var err = Module["printErr"] || console.error.bind(console);
+        Object.assign(Module, moduleOverrides);
+        moduleOverrides = null;
+        if (Module["arguments"])
+            arguments_ = Module["arguments"];
+        if (Module["thisProgram"])
+            thisProgram = Module["thisProgram"];
+        var wasmBinary = Module["wasmBinary"];
+        var wasmMemory;
         var ABORT = false;
-        class EmscriptenEH {
-        }
-        class EmscriptenSjLj extends EmscriptenEH {
-        }
-        var readyPromiseResolve, readyPromiseReject;
+        var HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64;
+        function updateMemoryViews() { var b = wasmMemory.buffer; Module["HEAP8"] = HEAP8 = new Int8Array(b); Module["HEAP16"] = HEAP16 = new Int16Array(b); Module["HEAPU8"] = HEAPU8 = new Uint8Array(b); Module["HEAPU16"] = HEAPU16 = new Uint16Array(b); Module["HEAP32"] = HEAP32 = new Int32Array(b); Module["HEAPU32"] = HEAPU32 = new Uint32Array(b); Module["HEAPF32"] = HEAPF32 = new Float32Array(b); Module["HEAPF64"] = HEAPF64 = new Float64Array(b); }
+        var __ATPRERUN__ = [];
+        var __ATINIT__ = [];
+        var __ATPOSTRUN__ = [];
         var runtimeInitialized = false;
-        function updateMemoryViews() { var b = wasmMemory.buffer; Module["HEAP8"] = HEAP8 = new Int8Array(b); HEAP16 = new Int16Array(b); Module["HEAPU8"] = HEAPU8 = new Uint8Array(b); HEAPU16 = new Uint16Array(b); HEAP32 = new Int32Array(b); HEAPU32 = new Uint32Array(b); HEAPF32 = new Float32Array(b); HEAPF64 = new Float64Array(b); HEAP64 = new BigInt64Array(b); HEAPU64 = new BigUint64Array(b); }
         function preRun() { if (Module["preRun"]) {
             if (typeof Module["preRun"] == "function")
                 Module["preRun"] = [Module["preRun"]];
             while (Module["preRun"].length) {
                 addOnPreRun(Module["preRun"].shift());
             }
-        } callRuntimeCallbacks(onPreRuns); }
-        function initRuntime() { runtimeInitialized = true; wasmExports["d"](); }
+        } callRuntimeCallbacks(__ATPRERUN__); }
+        function initRuntime() { runtimeInitialized = true; callRuntimeCallbacks(__ATINIT__); }
         function postRun() { if (Module["postRun"]) {
             if (typeof Module["postRun"] == "function")
                 Module["postRun"] = [Module["postRun"]];
             while (Module["postRun"].length) {
                 addOnPostRun(Module["postRun"].shift());
             }
-        } callRuntimeCallbacks(onPostRuns); }
-        function abort(what) { var _a; (_a = Module["onAbort"]) === null || _a === void 0 ? void 0 : _a.call(Module, what); what = `Aborted(${what})`; err(what); ABORT = true; what += ". Build with -sASSERTIONS for more info."; var e = new WebAssembly.RuntimeError(what); readyPromiseReject === null || readyPromiseReject === void 0 ? void 0 : readyPromiseReject(e); throw e; }
+        } callRuntimeCallbacks(__ATPOSTRUN__); }
+        function addOnPreRun(cb) { __ATPRERUN__.unshift(cb); }
+        function addOnInit(cb) { __ATINIT__.unshift(cb); }
+        function addOnPostRun(cb) { __ATPOSTRUN__.unshift(cb); }
+        var runDependencies = 0;
+        var dependenciesFulfilled = null;
+        function addRunDependency(id) { var _Module$monitorRunDep; runDependencies++; (_Module$monitorRunDep = Module["monitorRunDependencies"]) === null || _Module$monitorRunDep === void 0 || _Module$monitorRunDep.call(Module, runDependencies); }
+        function removeRunDependency(id) { var _Module$monitorRunDep2; runDependencies--; (_Module$monitorRunDep2 = Module["monitorRunDependencies"]) === null || _Module$monitorRunDep2 === void 0 || _Module$monitorRunDep2.call(Module, runDependencies); if (runDependencies == 0) {
+            if (dependenciesFulfilled) {
+                var callback = dependenciesFulfilled;
+                dependenciesFulfilled = null;
+                callback();
+            }
+        } }
+        function abort(what) { var _Module$onAbort; (_Module$onAbort = Module["onAbort"]) === null || _Module$onAbort === void 0 || _Module$onAbort.call(Module, what); what = "Aborted(" + what + ")"; err(what); ABORT = true; what += ". Build with -sASSERTIONS for more info."; var e = new WebAssembly.RuntimeError(what); readyPromiseReject(e); throw e; }
+        var dataURIPrefix = "data:application/octet-stream;base64,";
+        var isDataURI = filename => filename.startsWith(dataURIPrefix);
+        function findWasmBinary() { var f = "calculator.wasm"; if (!isDataURI(f)) {
+            return locateFile(f);
+        } return f; }
         var wasmBinaryFile;
-        function findWasmBinary() { return locateFile("calculator.wasm"); }
         function getBinarySync(file) { if (file == wasmBinaryFile && wasmBinary) {
             return new Uint8Array(wasmBinary);
         } if (readBinary) {
@@ -77,7 +123,7 @@ var createCalculatorModule = (() => {
             err(`failed to asynchronously prepare wasm: ${reason}`);
             abort(reason);
         } }
-        async function instantiateAsync(binary, binaryFile, imports) { if (!binary) {
+        async function instantiateAsync(binary, binaryFile, imports) { if (!binary && typeof WebAssembly.instantiateStreaming == "function" && !isDataURI(binaryFile) && typeof fetch == "function") {
             try {
                 var response = fetch(binaryFile, { credentials: "same-origin" });
                 var instantiationResult = await WebAssembly.instantiateStreaming(response, imports);
@@ -88,48 +134,44 @@ var createCalculatorModule = (() => {
                 err("falling back to ArrayBuffer instantiation");
             }
         } return instantiateArrayBuffer(binaryFile, imports); }
-        function getWasmImports() { var imports = { a: wasmImports }; return imports; }
-        async function createWasm() { function receiveInstance(instance, module) { wasmExports = instance.exports; assignWasmExports(wasmExports); updateMemoryViews(); return wasmExports; } function receiveInstantiationResult(result) { return receiveInstance(result["instance"]); } var info = getWasmImports(); if (Module["instantiateWasm"]) {
-            return new Promise((resolve, reject) => { Module["instantiateWasm"](info, (inst, mod) => { resolve(receiveInstance(inst, mod)); }); });
-        } wasmBinaryFile !== null && wasmBinaryFile !== void 0 ? wasmBinaryFile : (wasmBinaryFile = findWasmBinary()); var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info); var exports = receiveInstantiationResult(result); return exports; }
-        class ExitStatus {
-            constructor(status) {
-                this.name = "ExitStatus";
-                this.message = `Program terminated with exit(${status})`;
-                this.status = status;
+        function getWasmImports() { return { a: wasmImports }; }
+        async function createWasm() { var _wasmBinaryFile; function receiveInstance(instance, module) { wasmExports = instance.exports; wasmMemory = wasmExports["d"]; updateMemoryViews(); addOnInit(wasmExports["e"]); removeRunDependency("wasm-instantiate"); return wasmExports; } addRunDependency("wasm-instantiate"); function receiveInstantiationResult(result) { receiveInstance(result["instance"]); } var info = getWasmImports(); if (Module["instantiateWasm"]) {
+            try {
+                return Module["instantiateWasm"](info, receiveInstance);
             }
+            catch (e) {
+                err(`Module.instantiateWasm callback failed with error: ${e}`);
+                readyPromiseReject(e);
+            }
+        } (_wasmBinaryFile = wasmBinaryFile) !== null && _wasmBinaryFile !== void 0 ? _wasmBinaryFile : wasmBinaryFile = findWasmBinary(); try {
+            var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
+            receiveInstantiationResult(result);
+            return result;
         }
-        var HEAP16;
-        var HEAP32;
-        var HEAP64;
-        var HEAP8;
-        var HEAPF32;
-        var HEAPF64;
-        var HEAPU16;
-        var HEAPU32;
-        var HEAPU64;
-        var HEAPU8;
+        catch (e) {
+            readyPromiseReject(e);
+            return;
+        } }
+        class ExitStatus {
+            constructor(status) { _defineProperty(this, "name", "ExitStatus"); this.message = `Program terminated with exit(${status})`; this.status = status; }
+        }
         var callRuntimeCallbacks = callbacks => { while (callbacks.length > 0) {
             callbacks.shift()(Module);
         } };
-        var onPostRuns = [];
-        var addOnPostRun = cb => onPostRuns.push(cb);
-        var onPreRuns = [];
-        var addOnPreRun = cb => onPreRuns.push(cb);
-        function getValue(ptr, type = "i8") { if (type.endsWith("*"))
+        function getValue(ptr) { let type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "i8"; if (type.endsWith("*"))
             type = "*"; switch (type) {
             case "i1": return HEAP8[ptr];
             case "i8": return HEAP8[ptr];
             case "i16": return HEAP16[ptr >> 1];
             case "i32": return HEAP32[ptr >> 2];
-            case "i64": return HEAP64[ptr >> 3];
+            case "i64": abort("to do getValue(i64) use WASM_BIGINT");
             case "float": return HEAPF32[ptr >> 2];
             case "double": return HEAPF64[ptr >> 3];
             case "*": return HEAPU32[ptr >> 2];
             default: abort(`invalid type for getValue: ${type}`);
         } }
-        var noExitRuntime = true;
-        function setValue(ptr, value, type = "i8") { if (type.endsWith("*"))
+        var noExitRuntime = Module["noExitRuntime"] || true;
+        function setValue(ptr, value) { let type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "i8"; if (type.endsWith("*"))
             type = "*"; switch (type) {
             case "i1":
                 HEAP8[ptr] = value;
@@ -143,9 +185,7 @@ var createCalculatorModule = (() => {
             case "i32":
                 HEAP32[ptr >> 2] = value;
                 break;
-            case "i64":
-                HEAP64[ptr >> 3] = BigInt(value);
-                break;
+            case "i64": abort("to do setValue(i64) use WASM_BIGINT");
             case "float":
                 HEAPF32[ptr >> 2] = value;
                 break;
@@ -160,9 +200,10 @@ var createCalculatorModule = (() => {
         var stackRestore = val => __emscripten_stack_restore(val);
         var stackSave = () => _emscripten_stack_get_current();
         var __abort_js = () => abort("");
+        var __emscripten_memcpy_js = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
         var getHeapMax = () => 2147483648;
         var alignMemory = (size, alignment) => Math.ceil(size / alignment) * alignment;
-        var growMemory = size => { var oldHeapSize = wasmMemory.buffer.byteLength; var pages = (size - oldHeapSize + 65535) / 65536 | 0; try {
+        var growMemory = size => { var b = wasmMemory.buffer; var pages = (size - b.byteLength + 65535) / 65536 | 0; try {
             wasmMemory.grow(pages);
             updateMemoryViews();
             return 1;
@@ -199,7 +240,11 @@ var createCalculatorModule = (() => {
         } return len; };
         var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => { if (!(maxBytesToWrite > 0))
             return 0; var startIdx = outIdx; var endIdx = outIdx + maxBytesToWrite - 1; for (var i = 0; i < str.length; ++i) {
-            var u = str.codePointAt(i);
+            var u = str.charCodeAt(i);
+            if (u >= 55296 && u <= 57343) {
+                var u1 = str.charCodeAt(++i);
+                u = 65536 + ((u & 1023) << 10) | u1 & 1023;
+            }
             if (u <= 127) {
                 if (outIdx >= endIdx)
                     break;
@@ -225,17 +270,14 @@ var createCalculatorModule = (() => {
                 heap[outIdx++] = 128 | u >> 12 & 63;
                 heap[outIdx++] = 128 | u >> 6 & 63;
                 heap[outIdx++] = 128 | u & 63;
-                i++;
             }
         } heap[outIdx] = 0; return outIdx - startIdx; };
         var stringToUTF8 = (str, outPtr, maxBytesToWrite) => stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
         var stackAlloc = sz => __emscripten_stack_alloc(sz);
         var stringToUTF8OnStack = str => { var size = lengthBytesUTF8(str) + 1; var ret = stackAlloc(size); stringToUTF8(str, ret, size); return ret; };
-        var UTF8Decoder = globalThis.TextDecoder && new TextDecoder;
-        var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => { var maxIdx = idx + maxBytesToRead; if (ignoreNul)
-            return maxIdx; while (heapOrArray[idx] && !(idx >= maxIdx))
-            ++idx; return idx; };
-        var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead, ignoreNul) => { var endPtr = findStringEnd(heapOrArray, idx, maxBytesToRead, ignoreNul); if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
+        var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder : undefined;
+        var UTF8ArrayToString = function (heapOrArray) { let idx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0; let maxBytesToRead = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : NaN; var endIdx = idx + maxBytesToRead; var endPtr = idx; while (heapOrArray[endPtr] && !(endPtr >= endIdx))
+            ++endPtr; if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
             return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
         } var str = ""; while (idx < endPtr) {
             var u0 = heapOrArray[idx++];
@@ -263,7 +305,7 @@ var createCalculatorModule = (() => {
                 str += String.fromCharCode(55296 | ch >> 10, 56320 | ch & 1023);
             }
         } return str; };
-        var UTF8ToString = (ptr, maxBytesToRead, ignoreNul) => ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead, ignoreNul) : "";
+        var UTF8ToString = (ptr, maxBytesToRead) => ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : "";
         var ccall = (ident, returnType, argTypes, args, opts) => { var toC = { string: str => { var ret = 0; if (str !== null && str !== undefined && str !== 0) {
                 ret = stringToUTF8OnStack(str);
             } return ret; }, array: arr => { var ret = stackAlloc(arr.length); writeArrayToMemory(arr, ret); return ret; } }; function convertReturnValue(ret) { if (returnType === "string") {
@@ -285,60 +327,72 @@ var createCalculatorModule = (() => {
             stackRestore(stack); return convertReturnValue(ret); } ret = onDone(ret); return ret; };
         var cwrap = (ident, returnType, argTypes, opts) => { var numericArgs = !argTypes || argTypes.every(type => type === "number" || type === "boolean"); var numericRet = returnType !== "string"; if (numericRet && numericArgs && !opts) {
             return getCFunc(ident);
-        } return (...args) => ccall(ident, returnType, argTypes, args, opts); };
-        {
-            if (Module["noExitRuntime"])
-                noExitRuntime = Module["noExitRuntime"];
-            if (Module["print"])
-                out = Module["print"];
-            if (Module["printErr"])
-                err = Module["printErr"];
-            if (Module["wasmBinary"])
-                wasmBinary = Module["wasmBinary"];
-            if (Module["arguments"])
-                arguments_ = Module["arguments"];
-            if (Module["thisProgram"])
-                thisProgram = Module["thisProgram"];
-            if (Module["preInit"]) {
-                if (typeof Module["preInit"] == "function")
-                    Module["preInit"] = [Module["preInit"]];
-                while (Module["preInit"].length > 0) {
-                    Module["preInit"].shift()();
-                }
-            }
-        }
+        } return function () { for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        } return ccall(ident, returnType, argTypes, args, opts); }; };
+        var wasmImports = { a: __abort_js, b: __emscripten_memcpy_js, c: _emscripten_resize_heap };
+        var wasmExports;
+        createWasm();
+        var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports["e"])();
+        var _GetCalculatorVersion = Module["_GetCalculatorVersion"] = () => (_GetCalculatorVersion = Module["_GetCalculatorVersion"] = wasmExports["f"])();
+        var _CreateCalculator = Module["_CreateCalculator"] = (a0, a1, a2) => (_CreateCalculator = Module["_CreateCalculator"] = wasmExports["g"])(a0, a1, a2);
+        var _DisposeCalculator = Module["_DisposeCalculator"] = a0 => (_DisposeCalculator = Module["_DisposeCalculator"] = wasmExports["h"])(a0);
+        var _DisposeAll = Module["_DisposeAll"] = () => (_DisposeAll = Module["_DisposeAll"] = wasmExports["i"])();
+        var _SetDisplayEventCallback = Module["_SetDisplayEventCallback"] = (a0, a1) => (_SetDisplayEventCallback = Module["_SetDisplayEventCallback"] = wasmExports["j"])(a0, a1);
+        var _CalculatorInput = Module["_CalculatorInput"] = (a0, a1) => (_CalculatorInput = Module["_CalculatorInput"] = wasmExports["k"])(a0, a1);
+        var _GetSize = Module["_GetSize"] = (a0, a1) => (_GetSize = Module["_GetSize"] = wasmExports["l"])(a0, a1);
+        var _GetNegative = Module["_GetNegative"] = (a0, a1) => (_GetNegative = Module["_GetNegative"] = wasmExports["m"])(a0, a1);
+        var _GetError = Module["_GetError"] = (a0, a1) => (_GetError = Module["_GetError"] = wasmExports["n"])(a0, a1);
+        var _GetMemory = Module["_GetMemory"] = (a0, a1) => (_GetMemory = Module["_GetMemory"] = wasmExports["o"])(a0, a1);
+        var _GetPointPos = Module["_GetPointPos"] = (a0, a1) => (_GetPointPos = Module["_GetPointPos"] = wasmExports["p"])(a0, a1);
+        var _GetDigit = Module["_GetDigit"] = (a0, a1, a2) => (_GetDigit = Module["_GetDigit"] = wasmExports["q"])(a0, a1, a2);
+        var _GetDisplayDigit = Module["_GetDisplayDigit"] = (a0, a1, a2) => (_GetDisplayDigit = Module["_GetDisplayDigit"] = wasmExports["r"])(a0, a1, a2);
+        var _ExportDump = Module["_ExportDump"] = (a0, a1, a2) => (_ExportDump = Module["_ExportDump"] = wasmExports["s"])(a0, a1, a2);
+        var _ImportDump = Module["_ImportDump"] = (a0, a1, a2) => (_ImportDump = Module["_ImportDump"] = wasmExports["t"])(a0, a1, a2);
+        var _malloc = Module["_malloc"] = a0 => (_malloc = Module["_malloc"] = wasmExports["u"])(a0);
+        var _free = Module["_free"] = a0 => (_free = Module["_free"] = wasmExports["v"])(a0);
+        var __emscripten_stack_restore = a0 => (__emscripten_stack_restore = wasmExports["w"])(a0);
+        var __emscripten_stack_alloc = a0 => (__emscripten_stack_alloc = wasmExports["x"])(a0);
+        var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports["y"])();
         Module["ccall"] = ccall;
         Module["cwrap"] = cwrap;
         Module["setValue"] = setValue;
         Module["getValue"] = getValue;
         Module["UTF8ToString"] = UTF8ToString;
-        var _GetCalculatorVersion, _CreateCalculator, _DisposeCalculator, _DisposeAll, _SetDisplayEventCallback, _CalculatorInput, _GetSize, _GetNegative, _GetError, _GetMemory, _GetPointPos, _GetDigit, _GetDisplayDigit, _ExportDump, _ImportDump, _malloc, _free, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, memory, __indirect_function_table, wasmMemory;
-        function assignWasmExports(wasmExports) { _GetCalculatorVersion = Module["_GetCalculatorVersion"] = wasmExports["e"]; _CreateCalculator = Module["_CreateCalculator"] = wasmExports["f"]; _DisposeCalculator = Module["_DisposeCalculator"] = wasmExports["g"]; _DisposeAll = Module["_DisposeAll"] = wasmExports["h"]; _SetDisplayEventCallback = Module["_SetDisplayEventCallback"] = wasmExports["i"]; _CalculatorInput = Module["_CalculatorInput"] = wasmExports["j"]; _GetSize = Module["_GetSize"] = wasmExports["k"]; _GetNegative = Module["_GetNegative"] = wasmExports["l"]; _GetError = Module["_GetError"] = wasmExports["m"]; _GetMemory = Module["_GetMemory"] = wasmExports["n"]; _GetPointPos = Module["_GetPointPos"] = wasmExports["o"]; _GetDigit = Module["_GetDigit"] = wasmExports["p"]; _GetDisplayDigit = Module["_GetDisplayDigit"] = wasmExports["q"]; _ExportDump = Module["_ExportDump"] = wasmExports["r"]; _ImportDump = Module["_ImportDump"] = wasmExports["s"]; _malloc = Module["_malloc"] = wasmExports["t"]; _free = Module["_free"] = wasmExports["u"]; __emscripten_stack_restore = wasmExports["v"]; __emscripten_stack_alloc = wasmExports["w"]; _emscripten_stack_get_current = wasmExports["x"]; memory = wasmMemory = wasmExports["c"]; __indirect_function_table = wasmExports["__indirect_function_table"]; }
-        var wasmImports = { b: __abort_js, a: _emscripten_resize_heap };
-        function run() { preRun(); function doRun() { var _a; Module["calledRun"] = true; if (ABORT)
-            return; initRuntime(); readyPromiseResolve === null || readyPromiseResolve === void 0 ? void 0 : readyPromiseResolve(Module); (_a = Module["onRuntimeInitialized"]) === null || _a === void 0 ? void 0 : _a.call(Module); postRun(); } if (Module["setStatus"]) {
+        var calledRun;
+        dependenciesFulfilled = function runCaller() { if (!calledRun)
+            run(); if (!calledRun)
+            dependenciesFulfilled = runCaller; };
+        function run() { if (runDependencies > 0) {
+            return;
+        } preRun(); if (runDependencies > 0) {
+            return;
+        } function doRun() { var _Module$onRuntimeInit; if (calledRun)
+            return; calledRun = true; Module["calledRun"] = true; if (ABORT)
+            return; initRuntime(); readyPromiseResolve(Module); (_Module$onRuntimeInit = Module["onRuntimeInitialized"]) === null || _Module$onRuntimeInit === void 0 || _Module$onRuntimeInit.call(Module); postRun(); } if (Module["setStatus"]) {
             Module["setStatus"]("Running...");
             setTimeout(() => { setTimeout(() => Module["setStatus"](""), 1); doRun(); }, 1);
         }
         else {
             doRun();
         } }
-        var wasmExports;
-        wasmExports = await (createWasm());
+        if (Module["preInit"]) {
+            if (typeof Module["preInit"] == "function")
+                Module["preInit"] = [Module["preInit"]];
+            while (Module["preInit"].length > 0) {
+                Module["preInit"].pop()();
+            }
+        }
         run();
-        if (runtimeInitialized) {
-            moduleRtn = Module;
-        }
-        else {
-            moduleRtn = new Promise((resolve, reject) => { readyPromiseResolve = resolve; readyPromiseReject = reject; });
-        }
-        ;
+        moduleRtn = readyPromise;
         return moduleRtn;
-    };
+    });
 })();
-if (typeof exports === "object" && typeof module === "object") {
+if (typeof exports === 'object' && typeof module === 'object') {
     module.exports = createCalculatorModule;
+    // This default export looks redundant, but it allows TS to import this
+    // commonjs style module.
     module.exports.default = createCalculatorModule;
 }
-else if (typeof define === "function" && define["amd"])
+else if (typeof define === 'function' && define['amd'])
     define([], () => createCalculatorModule);
