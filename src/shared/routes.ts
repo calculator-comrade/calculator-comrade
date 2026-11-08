@@ -1,13 +1,8 @@
 import { assetUrl } from "./assetUrl.ts";
+import { routePaths } from "./routePaths.ts";
 
-export const routes = {
-    home: assetUrl(""),
-    calculator: assetUrl("calculator/"),
-    calculatorSettings: assetUrl("calculator/settings/"),
-    privacy: assetUrl("privacy-policy/"),
-    terms: assetUrl("terms-of-use/"),
-    license: assetUrl("license/"),
-    tips: assetUrl("tips-n-tricks/"),
-};
+export const routes = Object.fromEntries(
+    Object.entries(routePaths).map(([key, path]) => [key, assetUrl(path)]),
+) as { [K in keyof typeof routePaths]: string };
 
 export type RouteKey = keyof typeof routes;

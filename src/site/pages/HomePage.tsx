@@ -48,36 +48,34 @@ export function HomePage() {
             <section>
                 <h2>What is this calculator?</h2>
                 <p>
-                    <p>
-                        Calculator Comrade is a non-commercial project released under the MIT License.
-                    </p>
+                    Calculator Comrade is a non-commercial project released under the MIT License.
+                </p>
 
-                    <p>
-                        The project is split into two open source repositories. The calculator engine
-                        lives in{" "}
-                        <a
-                            href="https://github.com/calculator-comrade/calculator-comrade-lib"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            calculator-comrade-lib
-                        </a>
-                        {" "}– a small cross-platform core library designed to be usable not only in
-                        desktop and web applications, but also in embedded projects.
-                    </p>
+                <p>
+                    The project is split into two open source repositories. The calculator engine
+                    lives in{" "}
+                    <a
+                        href="https://github.com/calculator-comrade/calculator-comrade-lib"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        calculator-comrade-lib
+                    </a>
+                    {" "}– a small cross-platform core library designed to be usable not only in
+                    desktop and web applications, but also in embedded projects.
+                </p>
 
-                    <p>
-                        The{" "}
-                        <a
-                            href="https://github.com/calculator-comrade/calculator-comrade"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            calculator-comrade
-                        </a>
-                        {" "}repository contains this application, the website, legal pages, support
-                        pages, and platform-specific app wrappers.
-                    </p>
+                <p>
+                    The{" "}
+                    <a
+                        href="https://github.com/calculator-comrade/calculator-comrade"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        calculator-comrade
+                    </a>
+                    {" "}repository contains this application, the website, legal pages, support
+                    pages, and platform-specific app wrappers.
                 </p>
             </section>
 

@@ -1,6 +1,6 @@
 [package]
 name = "calculator-comrade"
-version = "1.0.2"
+version = "1.0.3"
 description = "Classic pocket calculator emulator"
 authors = ["Dmitry Dzakhov"]
 license = "MIT"

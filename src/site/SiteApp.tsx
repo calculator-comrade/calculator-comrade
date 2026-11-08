@@ -21,8 +21,8 @@ type SitePage =
     | "license";
 
 function getCurrentPage(): SitePage {
-    const baseUrl = import.meta.env.BASE_URL;
-    const basePath = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+    // routes.home is the normalized Vite base path (including the trailing slash).
+    const basePath = routes.home;
     let path = window.location.pathname;
 
     if (basePath !== "/" && path.startsWith(basePath)) {
