@@ -1,5 +1,5 @@
 import { assetUrl } from "./assetUrl.ts";
-import { routePaths } from "./routePaths.ts";
+import { routePaths } from "./routeDefinitions.ts";
 
 export const routes = Object.fromEntries(
     Object.entries(routePaths).map(([key, path]) => [key, assetUrl(path)]),

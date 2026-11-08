@@ -1,7 +1,7 @@
 {
   "name": "calculator-comrade",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -10,7 +10,7 @@
     "version": "node scripts/sync-app-version.js",
     "version:sync": "node scripts/sync-app-version.js",
     "build": "tsc -b && vite build",
-    "build:pages": "tsc -b && vite build --mode pages && node scripts/create-404.js",
+    "build:pages": "tsc -b && vite build --mode pages && node scripts/generate-pages.js",
     "build:desktop": "tsc -b && vite build --mode desktop",
     "build:android": "tsc -b && vite build --mode android",
     "lint": "eslint .",

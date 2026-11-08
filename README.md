@@ -260,3 +260,35 @@ architecture, for example:
 ```text
 Calculator Comrade_1.0.0_x64-setup.exe
 ```
+
+## GitHub Pages and search indexing
+
+The GitHub Pages build generates one `index.html` per known route, a `404.html`
+for unknown routes, and `sitemap.xml`:
+
+```bash
+npm run build:pages
+npm run preview:pages
+```
+
+Open `http://localhost:4173/calculator-comrade/` to preview the Pages build.
+The shared page metadata and route paths are defined in
+`src/shared/routeDefinitions.ts`. The build script
+`scripts/generate-pages.js` adds per-page titles, descriptions, canonical URLs,
+Open Graph tags, and `noindex` for non-indexable pages. All generated HTML
+files reference the same Vite-built application assets. This is not static
+rendering of the React page content.
+
+For search engines, the public sitemap URL is:
+
+```text
+https://calculator-comrade.github.io/calculator-comrade/sitemap.xml
+```
+
+After deploying, use Google Search Console to verify ownership of the site,
+submit that sitemap URL, and inspect the home, calculator and tips URLs.
+Search Console requires access to the account controlling site verification;
+local build checks cannot verify search engine indexing.
+
+The Open Graph image currently uses the existing
+`public/screenshots/screenshot-wide.png` asset.
