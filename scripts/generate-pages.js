@@ -1,12 +1,15 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { openGraphImagePath, routeDefinitions, siteBaseUrl } from "../src/shared/routeDefinitions.ts";
 
 const distDir = resolve("dist");
 const indexHtml = resolve(distDir, "index.html");
+const ssgOutputDir = resolve(distDir, ".ssg");
+const serverEntry = resolve(ssgOutputDir, "entry-server.js");
 
-if (!existsSync(indexHtml)) {
-    throw new Error("dist/index.html was not found. Run Vite build first.");
+if (!existsSync(indexHtml) || !existsSync(serverEntry)) {
+    throw new Error("Missing client HTML or SSR bundle. Run npm run build:pages.");
 }
 
 // Vite has already substituted the Pages base URL and hashed asset filenames.
@@ -24,7 +27,7 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;");
 }
 
-function renderPage(definition, canonicalUrl) {
+function renderPage(definition, canonicalUrl, prerenderedMarkup = null, routePath = null) {
     const meta = [
         "    <!-- BEGIN GENERATED SEO -->",
         `    <meta name="description" content="${escapeHtml(definition.description)}" />`,
@@ -64,35 +67,64 @@ function renderPage(definition, canonicalUrl) {
         throw new Error("The built index.html does not contain a </head> tag.");
     }
 
-    return htmlWithTitle.replace("</head>", `${meta.join("\n")}\n  </head>`);
-}
+    let html = htmlWithTitle.replace("</head>", `${meta.join("\n")}\n  </head>`);
 
-const sitemapUrls = [];
+    if (prerenderedMarkup !== null) {
+        const rootPlaceholder = '<div id="root"></div>';
+        const startupCover = '<div id="app-startup-cover" aria-hidden="true"></div>';
 
-for (const definition of Object.values(routeDefinitions)) {
-    const canonicalUrl = new URL(definition.path, siteBaseUrl).href;
-    const outputDir = resolve(distDir, definition.path);
-    mkdirSync(outputDir, { recursive: true });
-    writeFileSync(resolve(outputDir, "index.html"), renderPage(definition, canonicalUrl));
+        if (!html.includes(rootPlaceholder) || !html.includes(startupCover)) {
+            throw new Error("Expected HTML root or startup cover was not found.");
+        }
 
-    if (definition.indexable) {
-        sitemapUrls.push(canonicalUrl);
+        // A static page must be readable even with JavaScript disabled.
+        // The route marker also guards hydration against offline SPA fallbacks.
+        html = html.replace(
+            rootPlaceholder,
+            `<div id="root" data-ssg-path="${escapeHtml(routePath)}">${prerenderedMarkup}</div>`,
+        ).replace(startupCover, "");
     }
+
+    return html;
 }
 
-// GitHub Pages uses 404.html as an SPA fallback for unknown routes.
-// Do not give those unknown URLs the canonical URL of the home page.
-writeFileSync(resolve(distDir, "404.html"), renderPage({
-    title: "Page Not Found | Calculator Comrade",
-    description: "The requested Calculator Comrade page could not be found.",
-    indexable: false,
-}, null));
+try {
+    const { renderSitePage } = await import(pathToFileURL(serverEntry).href);
+    const sitemapUrls = [];
 
-const sitemap = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...sitemapUrls.map((url) => `  <url><loc>${escapeHtml(url)}</loc></url>`),
-    '</urlset>',
-    '',
-].join("\n");
-writeFileSync(resolve(distDir, "sitemap.xml"), sitemap);
+    for (const [routeKey, definition] of Object.entries(routeDefinitions)) {
+        const canonicalUrl = new URL(definition.path, siteBaseUrl).href;
+        const outputDir = resolve(distDir, definition.path);
+        mkdirSync(outputDir, { recursive: true });
+
+        const markup = definition.prerender ? renderSitePage(routeKey) : null;
+        const routePath = definition.prerender ? new URL(canonicalUrl).pathname : null;
+        writeFileSync(
+            resolve(outputDir, "index.html"),
+            renderPage(definition, canonicalUrl, markup, routePath),
+        );
+
+        if (definition.indexable) {
+            sitemapUrls.push(canonicalUrl);
+        }
+    }
+
+    // Unknown routes still use a client-rendered fallback with no canonical.
+    writeFileSync(resolve(distDir, "404.html"), renderPage({
+        title: "Page Not Found | Calculator Comrade",
+        description: "The requested Calculator Comrade page could not be found.",
+        indexable: false,
+    }, null));
+
+    const sitemap = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...sitemapUrls.map((url) => `  <url><loc>${escapeHtml(url)}</loc></url>`),
+        '</urlset>',
+        '',
+    ].join("\n");
+    writeFileSync(resolve(distDir, "sitemap.xml"), sitemap);
+} finally {
+    // The SSR bundle is a build-time tool, not a public website asset.
+    rmSync(ssgOutputDir, { recursive: true, force: true });
+}

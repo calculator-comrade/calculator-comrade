@@ -1,7 +1,7 @@
 {
   "name": "calculator-comrade",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -10,7 +10,7 @@
     "version": "node scripts/sync-app-version.js",
     "version:sync": "node scripts/sync-app-version.js",
     "build": "tsc -b && vite build",
-    "build:pages": "tsc -b && vite build --mode pages && node scripts/generate-pages.js",
+    "build:pages": "tsc -b && vite build --mode pages && vite build --mode pages --ssr src/site/entry-server.tsx --outDir dist/.ssg && node scripts/generate-pages.js && npm run test:ssg",
     "build:desktop": "tsc -b && vite build --mode desktop",
     "build:android": "tsc -b && vite build --mode android",
     "lint": "eslint .",
@@ -25,7 +25,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "tauri:build:linux": "tauri build --bundles deb,appimage",
-    "tauri:build:windows": "tauri build --bundles nsis"
+    "tauri:build:windows": "tauri build --bundles nsis",
+    "test:ssg": "node scripts/check-pages-ssg.js"
   },
   "dependencies": {
     "@capacitor/android": "~8.4.3",

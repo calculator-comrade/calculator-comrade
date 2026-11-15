@@ -8,6 +8,7 @@ type RouteDefinition = {
     title: string;
     description: string;
     indexable: boolean;
+    prerender: boolean;
 };
 
 export const routeDefinitions = {
@@ -16,42 +17,49 @@ export const routeDefinitions = {
         title: "Calculator Comrade — Free Classic 8-Digit Calculator",
         description: "Calculator Comrade is a free, open-source replica of a classic 8-digit pocket calculator. Authentic calculator behavior, no ads or in-app purchases.",
         indexable: true,
+        prerender: true,
     },
     calculator: {
         path: "calculator/",
         title: "Online 8-Digit Calculator | Calculator Comrade",
         description: "Use Calculator Comrade online: a free replica of a classic 8-digit pocket calculator with memory operations and authentic arithmetic behavior.",
         indexable: true,
+        prerender: false,
     },
     calculatorSettings: {
         path: "calculator/settings/",
         title: "Calculator Settings | Calculator Comrade",
         description: "Configure sound, vibration, and other Calculator Comrade preferences.",
         indexable: false,
+        prerender: false,
     },
     privacy: {
         path: "privacy-policy/",
         title: "Privacy Policy | Calculator Comrade",
         description: "Learn how Calculator Comrade handles privacy, locally saved settings, and calculator state.",
         indexable: true,
+        prerender: true,
     },
     terms: {
         path: "terms-of-use/",
         title: "Terms of Use | Calculator Comrade",
         description: "Read the terms of use for Calculator Comrade, a free, non-commercial calculator application.",
         indexable: true,
+        prerender: true,
     },
     license: {
         path: "license/",
         title: "Open Source Licenses | Calculator Comrade",
         description: "Read the Calculator Comrade MIT License and the notices for third-party open-source components.",
         indexable: true,
+        prerender: true,
     },
     tips: {
         path: "tips-n-tricks/",
         title: "Calculator Tips & Tricks | Calculator Comrade",
         description: "Explore keyboard shortcuts and classic pocket calculator tricks: repeated operations, memory functions, percentages, and more.",
         indexable: true,
+        prerender: true,
     },
 } as const satisfies Record<string, RouteDefinition>;
 

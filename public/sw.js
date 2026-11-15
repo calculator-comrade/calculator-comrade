@@ -1,4 +1,4 @@
-const CACHE_NAME = "calculator-comrade-v2";
+const CACHE_NAME = "calculator-comrade-v3";
 const BASE_PATH = new URL(self.registration.scope).pathname;
 const ASSET_MANIFEST_PATH = "asset-manifest.json";
 
@@ -96,6 +96,33 @@ function normalizeAssetPathList(value) {
 }
 
 async function handleFetch(request) {
+    // HTML navigation is network-first so newly deployed SSG pages cannot
+    // remain stale indefinitely. Static assets keep the original cache-first
+    // behavior, including the calculator's offline resources.
+    if (request.mode === "navigate") {
+        try {
+            const response = await fetch(request, { cache: "no-cache" });
+
+            if (response.ok) {
+                const cache = await caches.open(CACHE_NAME);
+                await cache.put(request, response.clone());
+            }
+
+            return response;
+        } catch (error) {
+            const fallback =
+                await findCachedResponse(request) ??
+                await findCachedResponse(toScopedUrl("index.html"));
+
+            if (fallback) {
+                return fallback;
+            }
+
+            console.warn("Offline navigation was not found in cache:", request.url);
+            throw error;
+        }
+    }
+
     const cachedResponse = await findCachedResponse(request);
 
     if (cachedResponse) {
@@ -112,14 +139,6 @@ async function handleFetch(request) {
 
         return response;
     } catch (error) {
-        if (request.mode === "navigate") {
-            const fallback = await findCachedResponse(toScopedUrl("index.html"));
-
-            if (fallback) {
-                return fallback;
-            }
-        }
-
         console.warn("Offline request was not found in cache:", request.url);
         throw error;
     }

@@ -4,11 +4,7 @@ import { routes } from "../shared/routes.ts";
 import { goBackOrReplace, subscribeToNavigationChanges } from "../platforms/web/webNavigation.ts";
 import { isAndroidApp, isStandaloneApp } from "../platforms/appEnvironment.ts";
 import { App as CapacitorApp } from "@capacitor/app";
-import { HomePage } from "./pages/HomePage.tsx";
-import { TipsAndTricksPage } from "./pages/TipsAndTricksPage.tsx";
-import { LicensePage } from "./pages/LicensePage.tsx";
-import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage.tsx";
-import { TermsOfUsePage } from "./pages/TermsOfUsePage.tsx";
+import { SiteContent } from "./SiteContent.tsx";
 import { markAppStartupReady } from "../app/startup/appStartupCover.ts";
 
 type SitePage =
@@ -56,15 +52,7 @@ function getCurrentPage(): SitePage {
     return "home";
 }
 
-function getPageLinkClassName(page: SitePage, currentPage: SitePage, baseClassName: string): string {
-    return page === currentPage ? `${baseClassName} ${baseClassName}--active` : baseClassName;
-}
-
-function getAriaCurrent(page: SitePage, currentPage: SitePage): "page" | undefined {
-    return page === currentPage ? "page" : undefined;
-}
-
-function isStandalonePage(page: SitePage): boolean {
+function isStandalonePage(page: SitePage): page is "calculator" | "calculatorSettings" {
     return page === "calculator" || page === "calculatorSettings";
 }
 
@@ -137,62 +125,5 @@ export function SiteApp() {
         return <CalculatorApp settingsDialogOpen={currentPage === "calculatorSettings"} />;
     }
 
-    return (
-        <div className="site-shell">
-            <header className="site-header">
-                <a className="site-title" href={routes.home}>Calculator Comrade</a>
-                <nav className="site-nav" aria-label="Main navigation">
-                    <a
-                        className={getPageLinkClassName("home", currentPage, "site-nav__link")}
-                        aria-current={getAriaCurrent("home", currentPage)}
-                        href={routes.home}
-                    >
-                        Home
-                    </a>
-                    <a className="site-nav__link" href={routes.calculator}>Calculator</a>
-                    <a
-                        className={getPageLinkClassName("tips", currentPage, "site-nav__link")}
-                        aria-current={getAriaCurrent("tips", currentPage)}
-                        href={routes.tips}
-                    >
-                        Tips & Tricks
-                    </a>
-                </nav>
-            </header>
-
-            <main className="site-main">
-                {currentPage === "home" && <HomePage />}
-                {currentPage === "tips" && <TipsAndTricksPage />}
-                {currentPage === "privacy" && <PrivacyPolicyPage />}
-                {currentPage === "terms" && <TermsOfUsePage />}
-                {currentPage === "license" && <LicensePage />}
-            </main>
-
-            <footer className="site-footer">
-                <nav className="site-footer__nav" aria-label="Legal navigation">
-                    <a
-                        className={getPageLinkClassName("privacy", currentPage, "site-footer__link")}
-                        aria-current={getAriaCurrent("privacy", currentPage)}
-                        href={routes.privacy}
-                    >
-                        Privacy Policy
-                    </a>
-                    <a
-                        className={getPageLinkClassName("terms", currentPage, "site-footer__link")}
-                        aria-current={getAriaCurrent("terms", currentPage)}
-                        href={routes.terms}
-                    >
-                        Terms of Use
-                    </a>
-                    <a
-                        className={getPageLinkClassName("license", currentPage, "site-footer__link")}
-                        aria-current={getAriaCurrent("license", currentPage)}
-                        href={routes.license}
-                    >
-                        License
-                    </a>
-                </nav>
-            </footer>
-        </div>
-    );
+    return <SiteContent page={currentPage} />;
 }
