@@ -39,8 +39,12 @@ for (const [routeKey, route] of Object.entries(routeDefinitions)) {
         assert.match(html, /<a\s[^>]*href=/, `${routeKey}: no static links`);
         assert.ok(!html.includes('id="app-startup-cover"'),
             `${routeKey}: startup cover hides content without JavaScript`);
+        assert.ok(!html.includes('class="javascript-required"'),
+            `${routeKey}: JavaScript warning must not appear on prerendered pages`);
     } else {
-        assert.ok(html.includes('<div id="root"></div>'), `${routeKey}: client root changed`);
+        assert.match(html, /<div id="root">\s*<noscript>[\s\S]*?class="javascript-required"/,
+            `${routeKey}: no-JavaScript message missing`);
+        assert.ok(html.includes('JavaScript is required'), `${routeKey}: no-JavaScript text missing`);
         assert.ok(html.includes('id="app-startup-cover"'), `${routeKey}: client startup cover missing`);
     }
 }
@@ -49,7 +53,7 @@ const fallback = readFileSync(resolve(distDir, "404.html"), "utf8");
 assert.ok(fallback.includes('name="robots" content="noindex, follow"'), "404: noindex missing");
 assert.ok(!fallback.includes('rel="canonical"'), "404: canonical must be absent");
 assert.ok(!fallback.includes("data-ssg-path"), "404: must not be prerendered");
-assert.ok(fallback.includes('<div id="root"></div>'), "404: client root missing");
+assert.match(fallback, /<div id="root">\s*<noscript>/, "404: client fallback root missing");
 
 const sitemap = readFileSync(resolve(distDir, "sitemap.xml"), "utf8");
 const expectedUrls = Object.values(routeDefinitions)

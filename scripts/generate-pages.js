@@ -70,10 +70,10 @@ function renderPage(definition, canonicalUrl, prerenderedMarkup = null, routePat
     let html = htmlWithTitle.replace("</head>", `${meta.join("\n")}\n  </head>`);
 
     if (prerenderedMarkup !== null) {
-        const rootPlaceholder = '<div id="root"></div>';
+        const rootPlaceholder = /<div id="root">\s*<noscript>[\s\S]*?<\/noscript>\s*<\/div>/;
         const startupCover = '<div id="app-startup-cover" aria-hidden="true"></div>';
 
-        if (!html.includes(rootPlaceholder) || !html.includes(startupCover)) {
+        if (!rootPlaceholder.test(html) || !html.includes(startupCover)) {
             throw new Error("Expected HTML root or startup cover was not found.");
         }
 

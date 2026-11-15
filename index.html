@@ -51,11 +51,49 @@
         pointer-events: none;
       }
     </style>
+    <noscript>
+      <style>
+        /* The startup cover must not hide the message when JS is disabled. */
+        #app-startup-cover {
+          display: none;
+        }
+
+        .javascript-required {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          min-height: 100dvh;
+          padding: 1.5rem;
+          color: #ffffff;
+          font: 16px/1.5 system-ui, sans-serif;
+          text-align: center;
+        }
+
+        .javascript-required h1 {
+          margin: 0 0 0.75rem;
+          font-size: 1.75rem;
+        }
+
+        .javascript-required p {
+          max-width: 32rem;
+          margin: 0;
+        }
+      </style>
+    </noscript>
     <title>Calculator Comrade</title>
   </head>
   <body>
     <div id="app-startup-cover" aria-hidden="true"></div>
-    <div id="root"></div>
+    <div id="root">
+      <noscript>
+        <main class="javascript-required">
+          <h1>JavaScript is required</h1>
+          <p>Calculator Comrade needs JavaScript to run the calculator. Please enable JavaScript in your browser and reload this page.</p>
+        </main>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
