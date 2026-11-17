@@ -1,4 +1,4 @@
-package com.dmitrydzz.calculatorcomrade;
+package ru.robotmitya.comrade;
 
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;

@@ -20,12 +20,14 @@ interface CreateCalculatorAppButtonActionsOptions {
     platform: AppPlatform;
     appActions: CalculatorAppActions;
     wasRateAppButtonUsed?: boolean;
+    onRateAppPress: () => void;
 }
 
 export function createCalculatorAppButtonActions({
     platform,
     appActions,
     wasRateAppButtonUsed = false,
+    onRateAppPress,
 }: CreateCalculatorAppButtonActionsOptions): CalculatorAppButtonAction[] {
     if (platform === "android") {
         const primaryAction: CalculatorAppButtonAction = wasRateAppButtonUsed
@@ -39,7 +41,7 @@ export function createCalculatorAppButtonActions({
                 id: "rateApp",
                 ariaLabel: "Rate app",
                 src: getPlatformAppButtonIcon(platform, "rateApp"),
-                onPress: appActions.rateApp,
+                onPress: onRateAppPress,
             };
 
         return [

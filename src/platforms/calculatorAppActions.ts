@@ -36,6 +36,6 @@ export interface CalculatorAppActions {
     loadCalculatorDump: () => MaybePromise<Uint8Array | null>;
     saveCalculatorDump: (dump: Uint8Array) => MaybePromise<void>;
     clearCalculatorDump: () => MaybePromise<void>;
-    rateApp: () => void;
+    rateApp: () => MaybePromise<void>;
     shareApp: () => void;
 }

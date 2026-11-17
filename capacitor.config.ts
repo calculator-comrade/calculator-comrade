@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-    appId: "com.dmitrydzz.calculatorcomrade",
+    appId: "ru.robotmitya.comrade",
     appName: "Calculator Comrade",
     webDir: "dist",
 };

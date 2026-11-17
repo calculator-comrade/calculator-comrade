@@ -7,6 +7,10 @@ import { currentAppPlatform } from "../platforms/appPlatform.ts";
 import { createWebCalculatorAppActions } from "../platforms/web/webCalculatorAppActions.ts";
 import { createDesktopCalculatorAppActions } from "../platforms/desktop/desktopCalculatorAppActions.ts";
 import { createAndroidCalculatorAppActions } from "../platforms/android/androidCalculatorAppActions.ts";
+import {
+    loadWasRateAppButtonUsed,
+    saveWasRateAppButtonUsed,
+} from "../platforms/android/androidRateAppButtonStorage.ts";
 import { isAndroidApp, isDesktopApp } from "../platforms/appEnvironment.ts";
 import { createCalculatorAppButtonActions } from "./calculator/calculatorAppButtonActions.ts";
 import type { CalculatorAppActions } from "../platforms/calculatorAppActions.ts";
@@ -46,9 +50,13 @@ export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
     const [pressedKeyboardButtonCodes, setPressedKeyboardButtonCodes] =
         useState<CalculatorButtonCode[]>([]);
     const [settingsButtonAttention, setSettingsButtonAttention] = useState(false);
+    const [wasRateAppButtonUsed, setWasRateAppButtonUsed] = useState(() =>
+        isAndroidApp && loadWasRateAppButtonUsed(),
+    );
 
     const activeKeyboardPressesRef = useRef<Map<string, CalculatorButtonCode>>(new Map());
     const previousSettingsDialogOpenRef = useRef(settingsDialogOpen);
+    const rateAppOpeningRef = useRef(false);
 
     const updatePressedKeyboardButtonCodes = useCallback(() => {
         setPressedKeyboardButtonCodes([
@@ -122,10 +130,32 @@ export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
         appActions.vibrateAppButtonTap();
     }, [appActions]);
 
+    const handleRateAppPress = useCallback(() => {
+        if (!isAndroidApp || wasRateAppButtonUsed || rateAppOpeningRef.current) {
+            return;
+        }
+
+        rateAppOpeningRef.current = true;
+
+        void (async () => {
+            try {
+                await appActions.rateApp();
+                saveWasRateAppButtonUsed();
+                setWasRateAppButtonUsed(true);
+            } catch (error) {
+                console.warn("Failed to open Calculator Comrade in Google Play.", error);
+            } finally {
+                rateAppOpeningRef.current = false;
+            }
+        })();
+    }, [appActions, wasRateAppButtonUsed]);
+
     const appButtonActions = useMemo(() => createCalculatorAppButtonActions({
         platform: currentAppPlatform,
         appActions,
-    }), [appActions]);
+        wasRateAppButtonUsed,
+        onRateAppPress: handleRateAppPress,
+    }), [appActions, handleRateAppPress, wasRateAppButtonUsed]);
 
     const calculatorButtonPressStartRef = useRef(handleCalculatorButtonPressStart);
     const calculatorButtonPressRef = useRef(handleCalculatorButtonPress);

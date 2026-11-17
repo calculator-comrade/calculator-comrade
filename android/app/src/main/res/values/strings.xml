@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Comrade</string>
     <string name="title_activity_main">Comrade</string>
-    <string name="package_name">com.dmitrydzz.calculatorcomrade</string>
-    <string name="custom_url_scheme">com.dmitrydzz.calculatorcomrade</string>
+    <string name="package_name">ru.robotmitya.comrade</string>
+    <string name="custom_url_scheme">ru.robotmitya.comrade</string>
 </resources>

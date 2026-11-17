@@ -514,7 +514,7 @@ dependencies = [
 
 [[package]]
 name = "calculator-comrade"
-version = "1.0.5"
+version = "2.0.0-rc.0"
 dependencies = [
  "log",
  "rodio",

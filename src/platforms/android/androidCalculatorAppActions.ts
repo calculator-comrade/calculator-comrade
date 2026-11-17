@@ -18,8 +18,18 @@ import {
 import { Browser } from "@capacitor/browser";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { Share } from "@capacitor/share";
+import { registerPlugin } from "@capacitor/core";
+
+interface AndroidCalculatorStorePlugin {
+    openRateAppPage: () => Promise<void>;
+}
+
+const AndroidCalculatorStore = registerPlugin<AndroidCalculatorStorePlugin>(
+    "AndroidCalculatorStore",
+);
 
 const ANDROID_HOME_URL = "https://calculator-comrade.github.io/calculator-comrade/";
+const ANDROID_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=ru.robotmitya.comrade";
 const ANDROID_HELP_URL = "https://calculator-comrade.github.io/calculator-comrade/tips-n-tricks/";
 const ANDROID_LICENSE_URL = "https://calculator-comrade.github.io/calculator-comrade/license/";
 const ANDROID_PRIVACY_POLICY_URL = "https://calculator-comrade.github.io/calculator-comrade/privacy-policy/";
@@ -100,17 +110,13 @@ export function createAndroidCalculatorAppActions(
             clearCalculatorDumpInLocalStorage();
         },
 
-        rateApp: () => {
-            /*
-             * The Play Store page is not available yet.
-             */
-        },
+        rateApp: () => AndroidCalculatorStore.openRateAppPage(),
 
         shareApp: () => {
             void Share.share({
                 title: "Calculator Comrade",
                 text: "A free calculator with no ads and no in-app purchases.",
-                url: ANDROID_HOME_URL,
+                url: ANDROID_PLAY_STORE_URL,
                 dialogTitle: "Share Calculator Comrade",
             }).catch((error: unknown) => {
                 console.warn("Failed to share app.", error);

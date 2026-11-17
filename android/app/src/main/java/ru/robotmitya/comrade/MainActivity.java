@@ -1,4 +1,4 @@
-package com.dmitrydzz.calculatorcomrade;
+package ru.robotmitya.comrade;
 
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
@@ -22,6 +22,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
         registerPlugin(AndroidCalculatorSoundPlugin.class);
+        registerPlugin(AndroidCalculatorStorePlugin.class);
 
         super.onCreate(savedInstanceState);
 
