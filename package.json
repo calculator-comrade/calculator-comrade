@@ -26,7 +26,9 @@
     "tauri:build": "tauri build",
     "tauri:build:linux": "tauri build --bundles deb,appimage",
     "tauri:build:windows": "tauri build --bundles nsis",
-    "test:ssg": "node scripts/check-pages-ssg.js"
+    "test:ssg": "node scripts/check-pages-ssg.js",
+    "android:bundle:release": "node scripts/build-android-release.js",
+    "android:bundle:release:manual": "node scripts/build-android-release-manual.js"
   },
   "dependencies": {
     "@capacitor/android": "~8.4.3",

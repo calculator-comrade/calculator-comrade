@@ -51,6 +51,12 @@ Thumbs.db
 
 *.js.symbols
 
+# Release signing and output
+*.jks
+*.keystore
+android/keystore.properties
+artifacts/
+
 # Capacitor
 android/.gradle/
 android/build/

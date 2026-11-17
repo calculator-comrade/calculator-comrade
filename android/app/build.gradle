@@ -1,5 +1,44 @@
 apply plugin: 'com.android.application'
 
+// Local signing credentials are not committed to Git.
+// See android/keystore.properties.example and docs/android-release.md.
+def releaseSigningFile = rootProject.file('keystore.properties')
+def releaseSigning = new Properties()
+def resolvedSigningPasswords = [:]
+// Android Studio sync and debug builds should not require release-only secrets.
+def releaseTaskRequested = gradle.startParameter.taskNames.any { task ->
+    task.toLowerCase(java.util.Locale.ROOT).contains('release')
+}
+def environmentReferencePattern = java.util.regex.Pattern.compile('^\\$\\{env:([A-Za-z_][A-Za-z0-9_]*)\\}$')
+if (releaseSigningFile.isFile()) {
+    releaseSigningFile.withInputStream { stream -> releaseSigning.load(stream) }
+    ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].each { name ->
+        if (!releaseSigning.getProperty(name)?.trim()) {
+            throw new GradleException("Missing '${name}' in ${releaseSigningFile}")
+        }
+    }
+    ['storePassword', 'keyPassword'].each { name ->
+        def raw = releaseSigning.getProperty(name)
+        def matcher = environmentReferencePattern.matcher(raw)
+        if (matcher.matches()) {
+            def envName = matcher.group(1)
+            def secret = System.getenv(envName)
+            if (!secret && releaseTaskRequested) {
+                throw new GradleException("Environment variable '${envName}' for '${name}' is not set")
+            }
+            resolvedSigningPasswords[name] = secret ?: ''
+        } else if (raw.startsWith('${env:')) {
+            throw new GradleException("Invalid environment reference for '${name}' in ${releaseSigningFile}")
+        } else {
+            // Keep literal values supported for existing local configurations.
+            resolvedSigningPasswords[name] = raw
+        }
+    }
+    if (!rootProject.file(releaseSigning.getProperty('storeFile')).isFile()) {
+        throw new GradleException("Android upload keystore not found: ${releaseSigning.getProperty('storeFile')}")
+    }
+}
+
 android {
     namespace = "ru.robotmitya.comrade"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +55,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (releaseSigningFile.isFile()) {
+            release {
+                storeFile rootProject.file(releaseSigning.getProperty('storeFile'))
+                storePassword resolvedSigningPasswords.storePassword
+                keyAlias releaseSigning.getProperty('keyAlias')
+                keyPassword resolvedSigningPasswords.keyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseSigningFile.isFile()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
