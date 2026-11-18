@@ -21,8 +21,10 @@ an **upload key**, not the key Google Play uses to sign APKs delivered to users.
    without this project-specific handling. The local file is Git-ignored; on
    Linux use `chmod 600 android/keystore.properties`.
 
-   Set the environment variables in the shell that starts the build. For
-   Bash (Linux/macOS), prompt without displaying the password:
+   The release command automatically prompts for missing referenced passwords
+   when run in an interactive terminal. For unattended builds (including CI/CD),
+   define the environment variables in advance. For Bash (Linux/macOS), you can
+   set them without displaying the password:
 
    ```bash
    read -rsp 'Keystore password: ' CC_ANDROID_STORE_PASSWORD; echo
@@ -38,8 +40,10 @@ an **upload key**, not the key Google Play uses to sign APKs delivered to users.
    $env:CC_ANDROID_KEY_PASSWORD = Read-Host 'Key password'
    ```
 
-   These variables only need to exist for the release build process;
-   Android Studio Gradle Sync and debug builds do not require them. To build a
+   For an interactive build you may leave both variables unset; the command
+   will request them without echo. In CI/CD, all referenced secrets must be
+   provided in advance. These variables only need to exist during the release
+   build; Android Studio Gradle Sync and debug builds do not require them. To build a
    release from Android Studio instead, launch Studio with the variables in its
    environment. Do not store actual passwords in shell scripts, shell history,
    or the repository.
@@ -50,10 +54,10 @@ an **upload key**, not the key Google Play uses to sign APKs delivered to users.
 4. From the repository root, run:
 
    ```bash
-   npm run android:bundle:release
+   npm run build:android:aab
    ```
 
-The command performs `npm run cap:sync:android`, builds `:app:bundleRelease`
+The command performs `npm run sync:android`, builds `:app:bundleRelease`
 with the local upload key, verifies the AAB's JAR signature using `jarsigner`,
 and compares its signer SHA-256 against `upload_certificate.pem` using `keytool`.
 It then copies the validated result to:
@@ -68,39 +72,33 @@ these files or put credentials in CI logs. An AAB is intended for Play Console,
 not for direct installation with `adb`; use an APK or a testing track to test
 on actual devices.
 
-## Manual interactive signing (recommended for local releases)
+## One command for local and CI/CD builds
 
-Once `android/keystore.properties` points at the upload keystore and uses
-`${env:...}` references for the passwords, run from the repository root:
-
-```bash
-npm run android:bundle:release:manual
-```
-
-The wrapper prompts for each distinct referenced environment variable with
-**no password echo**, then invokes the existing `android:bundle:release` npm
-script with those variables set **only in its child process environment**.
-This behaves the same way in interactive Linux, macOS, and Windows terminals.
-It requires a real terminal and cannot be used in noninteractive CI/CD.
-
-The existing command remains unchanged for CI/CD:
+Run the same command in an interactive terminal or in CI/CD:
 
 ```bash
-npm run android:bundle:release
+npm run build:android:aab
 ```
 
-It reads the password environment variables supplied by the CI secret store.
-The wrapper never saves passwords to files, shell history, or the calling
-shell's environment. As with any environment variables, secrets remain
-accessible to the build process (and potentially other processes with
-sufficient privileges), so use a trusted local machine and do not enable
-verbose logging of the build environment. Press Ctrl+C or Escape to cancel
-during password entry.
+If `${env:...}` signing variables are already set, their values are used without
+prompting. Otherwise, in an interactive terminal the command asks **only for
+missing passwords**, with no password echo; if both properties reference the
+same variable, it is requested just once. The input is passed only in the
+child builder's environment and does not modify the parent shell.
+
+In CI/CD, where no interactive terminal is available, missing signing variables
+cause a clear error instead of waiting for input. Literal passwords in the
+properties file remain supported for compatibility, but are discouraged.
+
+Secrets are never passed as command-line arguments. As with any environment
+variables, they remain available to the build process (and potentially other
+processes with sufficient privileges); use a trusted environment and avoid
+logging its variables. Press Ctrl+C or Escape to cancel interactive input.
 
 ## Isolated frontend build output
 
-`npm run build:android` writes its Vite assets to `dist/android/`.
-`npm run cap:sync:android` syncs this directory because
+`npm run build:android:web-assets` writes its Vite assets to `dist/android/`.
+`npm run sync:android` syncs this directory because
 `capacitor.config.ts` sets `webDir: "dist/android"`.
 
 The other builds are isolated: `dist/web/`, `dist/pages/`, and
@@ -115,8 +113,8 @@ Set `JAVA_HOME` in your OS or CI configuration to the root directory of a
 **complete JDK**, not just a JRE. The release script does **not** search for a
 specific Java version or change the system default. It checks that `JAVA_HOME`
 is set and that `java`, `javac`, `keytool` and `jarsigner` are present, then
-passes that JDK to Gradle and other child processes. Both the manual and
-CI/CD release commands use this same setting.
+passes that JDK to Gradle and other child processes. The same release
+command uses this setting in both local and CI/CD builds.
 
 The project's current Gradle Wrapper is **8.14.3** and Android Gradle Plugin is
 **8.13.0**, matching Capacitor 8's recommended configuration. JDK **21** is a
@@ -195,13 +193,13 @@ Run from the repository root:
 
 ```bash
 # Analyze the newest AAB in artifacts/android/
-npm run android:analyze
+npm run analyze:android:aab
 
 # Analyze a specific AAB, without changing its versionCode
-npm run android:analyze -- artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
+npm run analyze:android:aab -- artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
 
 # Compare versions: write a separate report for each AAB
-npm run android:analyze -- artifacts/android/calculator-comrade-2.0.0-rc.0-17.aab artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
+npm run analyze:android:aab -- artifacts/android/calculator-comrade-2.0.0-rc.0-17.aab artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
 ```
 
 For each AAB, the script executes Google's `android analyze --analysis=optimization`
@@ -233,10 +231,10 @@ It uses `JAVA_HOME` for Java and JDK `jar` on Windows/Linux/macOS.
 
 ```bash
 # Uses the most recently modified AAB in artifacts/android/
-npm run android:apk
+npm run convert:android:aab-to-apk
 
 # Or explicitly select an AAB, without bumping versionCode
-npm run android:apk -- artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
+npm run convert:android:aab-to-apk -- artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
 ```
 
 For an input `calculator-comrade-VERSION-CODE.aab`, the command writes:

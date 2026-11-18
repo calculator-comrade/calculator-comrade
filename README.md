@@ -44,13 +44,13 @@ npm ci
 Build the Android frontend assets and sync them into the Android project:
 
 ```bash
-npm run cap:sync:android
+npm run sync:android
 ```
 
 Open the native Android project in Android Studio:
 
 ```bash
-npm run cap:open:android
+npm run open:android:studio
 ```
 
 The Android project lives in:
@@ -101,18 +101,19 @@ they are not already available on the host machine.
 Run the web application on localhost in development mode:
 
 ```bash
-npm run dev
+npm start
+# Equivalent to: npm run start:web
 ```
 
-This starts the Vite development server. Open the localhost URL printed by Vite
+Both `npm start` and `npm run start:web` launch the same Vite development server. Open the localhost URL printed by Vite
 in a browser.
 
 To check a production-style frontend build locally, build the web app and serve
 the generated files with Vite preview:
 
 ```bash
-npm run build
-npm run preview
+npm run build:web
+npm run preview:web
 ```
 
 Do not open files from `dist/web/` directly in a browser. The built application
@@ -122,10 +123,10 @@ Each Vite build has its own output directory:
 
 ```text
 dist/
-  web/       # npm run build; npm run preview
+  web/       # npm run build:web; npm run preview:web
   pages/     # npm run build:pages; npm run preview:pages; GitHub Pages
-  desktop/   # npm run build:desktop; Tauri frontend
-  android/   # npm run build:android; Capacitor webDir
+  desktop/   # npm run build:desktop:web-assets; Tauri frontend
+  android/   # npm run build:android:web-assets; Capacitor webDir
 ```
 
 Building one target does **not** overwrite the output of another target. The
@@ -138,7 +139,7 @@ under `dist/` remain Git-ignored.
 Run the desktop app in development mode:
 
 ```bash
-npm run tauri:dev
+npm run start:desktop
 ```
 
 This starts the Vite dev server in `desktop` mode and launches the Tauri shell.
@@ -149,14 +150,14 @@ Use the explicit platform build scripts instead of relying on the default Tauri
 bundle target list:
 
 ```json
-"tauri:build:linux": "tauri build --bundles deb,appimage",
-"tauri:build:windows": "tauri build --bundles nsis"
+"build:desktop:linux": "tauri build --bundles deb,appimage",
+"build:desktop:windows": "tauri build --bundles nsis"
 ```
 
 The frontend-only desktop build is still available separately:
 
 ```bash
-npm run build:desktop
+npm run build:desktop:web-assets
 ```
 
 It writes the Vite output to:
@@ -209,7 +210,7 @@ The Debian package metadata declares the dependency as
 Build the Linux app and packages:
 
 ```bash
-npm run tauri:build:linux
+npm run build:desktop:linux
 ```
 
 The native release executable is written under:
@@ -248,7 +249,7 @@ a clean machine fails to start the Tauri app.
 Build the Windows app and NSIS installer:
 
 ```powershell
-npm run tauri:build:windows
+npm run build:desktop:windows
 ```
 
 The native release executable is written under:

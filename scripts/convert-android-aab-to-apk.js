@@ -21,7 +21,7 @@ function requireFile(path, description) {
 }
 
 function findBundle() {
-    if (process.argv.length > 3) fail("Usage: npm run android:apk -- [path/to/bundle.aab]");
+    if (process.argv.length > 3) fail("Usage: npm run convert:android:aab-to-apk -- [path/to/bundle.aab]");
     if (process.argv[2]) {
         const path = filePath(process.argv[2]);
         if (!path.toLowerCase().endsWith(".aab")) fail(`Not an AAB file: ${path}`);

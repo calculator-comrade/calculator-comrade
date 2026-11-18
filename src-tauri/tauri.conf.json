@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../dist/desktop",
     "devUrl": "http://127.0.0.1:5174",
-    "beforeDevCommand": "npm run dev:desktop",
-    "beforeBuildCommand": "npm run build:desktop"
+    "beforeDevCommand": "npm run start:desktop:dev-server",
+    "beforeBuildCommand": "npm run build:desktop:web-assets"
   },
   "app": {
     "windows": [

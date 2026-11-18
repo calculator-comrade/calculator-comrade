@@ -112,7 +112,7 @@ try {
     const probe = spawnSync(cli, ["--version"], { cwd: projectRoot, encoding: "utf8", windowsHide: true });
     if (probe.error?.code === "ENOENT") {
         console.log("Android CLI is not installed or is not in PATH. Skipping Android analysis.");
-        console.log("Install it from https://developer.android.com/tools/agents/android-cli to enable npm run android:analyze.");
+        console.log("Install it from https://developer.android.com/tools/agents/android-cli to enable npm run analyze:android:aab.");
     } else if (probe.error || probe.status !== 0) {
         fail(`Cannot run Android CLI: ${probe.error?.message ?? probe.stderr?.trim() ?? "unknown error"}`);
     } else {

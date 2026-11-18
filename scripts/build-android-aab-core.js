@@ -145,11 +145,11 @@ try {
     // avoids Windows .cmd execution pitfalls and does not require a shell.
     const npmCli = process.env.npm_execpath;
     if (npmCli && existsSync(npmCli)) {
-        run(process.execPath, [npmCli, "run", "cap:sync:android"]);
+        run(process.execPath, [npmCli, "run", "sync:android"]);
     } else if (process.platform === "win32") {
-        run(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "npm.cmd run cap:sync:android"]);
+        run(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "npm.cmd run sync:android"]);
     } else {
-        run("npm", ["run", "cap:sync:android"]);
+        run("npm", ["run", "sync:android"]);
     }
 
     // Remove previous outputs so stale artifacts cannot pass release verification.

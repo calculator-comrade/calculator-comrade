@@ -6,15 +6,16 @@ import { fileURLToPath } from "node:url";
 
 const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 const propertiesFile = join(projectRoot, "android", "keystore.properties");
+const coreScript = fileURLToPath(new URL("./build-android-aab-core.js", import.meta.url));
 const secretPropertyNames = ["storePassword", "keyPassword"];
 
-function signingEnvironmentVariables() {
+function missingSigningEnvironmentVariables() {
     if (!existsSync(propertiesFile)) {
         throw new Error("Missing android/keystore.properties (see docs/android-release.md)");
     }
 
-    // Match the simple properties format used by our release build script.
-    // Both literal passwords and ${env:NAME} references remain supported.
+    // Match the simple properties format used by the core release builder.
+    // Literal passwords are supported; ${env:NAME} references are preferred.
     const properties = new Map();
     for (const line of readFileSync(propertiesFile, "utf8").split(/\r?\n/)) {
         if (!line.trim() || /^\s*[#!]/.test(line)) continue;
@@ -22,19 +23,22 @@ function signingEnvironmentVariables() {
         if (match) properties.set(match[1], match[2].trim());
     }
 
-    const prompts = new Map();
+    const missing = new Map();
     for (const name of secretPropertyNames) {
         const value = properties.get(name);
         if (!value) throw new Error(`Missing '${name}' in android/keystore.properties`);
         const match = /^\$\{env:([A-Za-z_][A-Za-z0-9_]*)\}$/.exec(value);
         if (match) {
-            // Prompt once even if both passwords reference the same variable.
-            if (!prompts.has(match[1])) prompts.set(match[1], name);
+            // One prompt per distinct variable, and only when not already set.
+            const variable = match[1];
+            if (!process.env[variable] && !missing.has(variable)) {
+                missing.set(variable, name);
+            }
         } else if (value.startsWith("${env:")) {
             throw new Error(`Invalid environment reference for '${name}' in android/keystore.properties`);
         }
     }
-    return prompts;
+    return missing;
 }
 
 function readSecret(prompt) {
@@ -71,38 +75,41 @@ function readSecret(prompt) {
 }
 
 async function main() {
-    if (!process.stdin.isTTY || !process.stdout.isTTY || typeof process.stdin.setRawMode !== "function") {
-        throw new Error("Interactive build requires a terminal. Use 'npm run android:bundle:release' in CI/CD.");
-    }
-    const npmCli = process.env.npm_execpath;
-    if (!npmCli || !existsSync(npmCli)) {
-        throw new Error("Run this script via 'npm run android:bundle:release:manual'.");
+    const missing = missingSigningEnvironmentVariables();
+    if (missing.size > 0) {
+        if (!process.stdin.isTTY || !process.stdout.isTTY || typeof process.stdin.setRawMode !== "function") {
+            throw new Error(
+                `Missing signing environment variable(s): ${[...missing.keys()].join(", ")}. ` +
+                "Set them in CI/CD or run 'npm run build:android:aab' in an interactive terminal.",
+            );
+        }
+        emitKeypressEvents(process.stdin);
     }
 
-    const variables = signingEnvironmentVariables();
     const childEnv = { ...process.env };
-    emitKeypressEvents(process.stdin);
-    for (const [variable, property] of variables) {
-        childEnv[variable] = await readSecret(`${property} (${variable})`);
-    }
+    try {
+        for (const [variable, property] of missing) {
+            childEnv[variable] = await readSecret(`${property} (${variable})`);
+        }
 
-    // Invoke the existing CI-compatible command, using npm's JavaScript CLI
-    // rather than npm.cmd: this works on Windows, Linux, and macOS without a shell.
-    const result = spawnSync(process.execPath, [npmCli, "run", "android:bundle:release"], {
-        cwd: projectRoot,
-        env: childEnv,
-        stdio: "inherit",
-    });
-    // Do not put secrets into the current shell or process.env.
-    for (const variable of variables.keys()) delete childEnv[variable];
-    if (result.error) throw new Error(`Cannot launch npm: ${result.error.message}`);
-    if (result.signal) {
-        throw new Error(`Release build terminated by signal ${result.signal}`);
+        // No public CI/manual distinction: call the core directly via Node.
+        // Secrets are passed only in the child process environment, never as arguments.
+        const result = spawnSync(process.execPath, [coreScript], {
+            cwd: projectRoot,
+            env: childEnv,
+            stdio: "inherit",
+            windowsHide: true,
+        });
+        if (result.error) throw new Error(`Cannot launch Android AAB builder: ${result.error.message}`);
+        if (result.signal) throw new Error(`Android AAB build terminated by signal ${result.signal}`);
+        process.exitCode = result.status ?? 1;
+    } finally {
+        // Do not mutate the parent shell or process.env; discard only prompted secrets.
+        for (const variable of missing.keys()) delete childEnv[variable];
     }
-    process.exitCode = result.status ?? 1;
 }
 
 main().catch((error) => {
-    console.error(`\nInteractive Android release build failed: ${error.message}`);
+    console.error(`\nAndroid AAB build failed: ${error.message}`);
     process.exitCode = 1;
 });
