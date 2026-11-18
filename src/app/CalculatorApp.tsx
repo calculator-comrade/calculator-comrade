@@ -32,6 +32,34 @@ interface CalculatorAppProps {
     settingsDialogOpen: boolean;
 }
 
+function useRateAppPress(
+    appActions: CalculatorAppActions,
+    wasRateAppButtonUsed: boolean,
+    setWasRateAppButtonUsed: (used: boolean) => void,
+): () => void {
+    const rateAppOpeningRef = useRef(false);
+
+    return useCallback(() => {
+        if (!isAndroidApp || wasRateAppButtonUsed || rateAppOpeningRef.current) {
+            return;
+        }
+
+        rateAppOpeningRef.current = true;
+
+        void (async () => {
+            try {
+                await appActions.rateApp();
+                saveWasRateAppButtonUsed();
+                setWasRateAppButtonUsed(true);
+            } catch (error) {
+                console.warn("Failed to open Calculator Comrade in Google Play.", error);
+            } finally {
+                rateAppOpeningRef.current = false;
+            }
+        })();
+    }, [appActions, wasRateAppButtonUsed, setWasRateAppButtonUsed]);
+}
+
 export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
     const appActions = useMemo<CalculatorAppActions>(() => {
         const createCalculatorAppActions = isAndroidApp
@@ -56,7 +84,6 @@ export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
 
     const activeKeyboardPressesRef = useRef<Map<string, CalculatorButtonCode>>(new Map());
     const previousSettingsDialogOpenRef = useRef(settingsDialogOpen);
-    const rateAppOpeningRef = useRef(false);
 
     const updatePressedKeyboardButtonCodes = useCallback(() => {
         setPressedKeyboardButtonCodes([
@@ -130,25 +157,11 @@ export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
         appActions.vibrateAppButtonTap();
     }, [appActions]);
 
-    const handleRateAppPress = useCallback(() => {
-        if (!isAndroidApp || wasRateAppButtonUsed || rateAppOpeningRef.current) {
-            return;
-        }
-
-        rateAppOpeningRef.current = true;
-
-        void (async () => {
-            try {
-                await appActions.rateApp();
-                saveWasRateAppButtonUsed();
-                setWasRateAppButtonUsed(true);
-            } catch (error) {
-                console.warn("Failed to open Calculator Comrade in Google Play.", error);
-            } finally {
-                rateAppOpeningRef.current = false;
-            }
-        })();
-    }, [appActions, wasRateAppButtonUsed]);
+    const handleRateAppPress = useRateAppPress(
+        appActions,
+        wasRateAppButtonUsed,
+        setWasRateAppButtonUsed,
+    );
 
     const appButtonActions = useMemo(() => createCalculatorAppButtonActions({
         platform: currentAppPlatform,
