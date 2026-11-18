@@ -30,6 +30,11 @@ See [AUTHORS.md](AUTHORS.md).
 
 See [CHANGELOG.md](CHANGELOG.md).
 
+## Quick start
+
+See [quick-start.md](quick-start.md) for installation, local development,
+release preparation, and publishing the project site.
+
 ## Android build
 
 The Android application is built with Capacitor. The frontend is built by Vite
@@ -46,6 +51,21 @@ Build the Android frontend assets and sync them into the Android project:
 ```bash
 npm run sync:android
 ```
+
+Build, analyze, install and launch the R8-optimized release on a connected
+Android device or emulator:
+
+```bash
+npm run start:android
+# With multiple devices, pick one interactively, or specify:
+npm run start:android -- --serial emulator-5554
+```
+
+This command requires `JAVA_HOME`, `BUNDLETOOL_JAR`, `adb` and signing
+configuration. It invokes `build:android:aab`, `analyze:android:aab` (optional
+Android CLI), and `convert:android:aab-to-apk` before installation. See
+[Android release documentation](docs/android-release.md) for details,
+including debug APK signing and how it differs from Google Play signing.
 
 Open the native Android project in Android Studio:
 
@@ -124,7 +144,7 @@ Each Vite build has its own output directory:
 ```text
 dist/
   web/       # npm run build:web; npm run preview:web
-  pages/     # npm run build:pages; npm run preview:pages; GitHub Pages
+  pages/     # npm run build:pages; npm run start:pages; GitHub Pages
   desktop/   # npm run build:desktop:web-assets; Tauri frontend
   android/   # npm run build:android:web-assets; Capacitor webDir
 ```
@@ -285,7 +305,7 @@ for unknown routes, and `sitemap.xml`:
 
 ```bash
 npm run build:pages
-npm run preview:pages
+npm run start:pages
 ```
 
 The static site is built in `dist/pages/` and the GitHub Pages deployment uploads

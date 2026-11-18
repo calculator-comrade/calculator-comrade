@@ -260,3 +260,47 @@ removes its local app data. Google Play delivers APKs signed with Google's
 **app signing key**, which can differ from the upload key used for our AAB.
 For testing the actual Play-signed APK and in-store features, use a Play
 testing track. This command never uploads to Google Play or modifies the AAB.
+
+## Build, install and start on an Android device
+
+To test the complete **R8-optimized release** on a connected phone or emulator,
+run one command from the repository root:
+
+```bash
+npm run start:android
+```
+
+The command checks for `adb`, `JAVA_HOME` and `BUNDLETOOL_JAR`, selects a
+connected device, then runs these existing steps in order:
+
+1. `build:android:aab` — rebuild the signed release AAB (including Vite assets,
+   Capacitor Sync, Gradle/R8, and signature verification). As usual, missing
+   signing passwords are requested only in an interactive terminal.
+2. `analyze:android:aab` — analyze that exact AAB and save the reports. This
+   step is skipped with a notice if Google Android CLI is not installed.
+3. `convert:android:aab-to-apk` — generate a universal, debug-signed APK from
+   that exact AAB via bundletool.
+4. `adb install -r` — install the APK, then `adb shell am start` — launch it.
+
+If exactly one device is ready, it is chosen automatically. If several are
+ready, select one from the numbered list. To choose explicitly (including in
+non-interactive scripts), specify a serial from `adb devices -l`:
+
+```bash
+npm run start:android -- --serial emulator-5554
+# Or preselect with ANDROID_SERIAL in the environment.
+```
+
+Offline or unauthorized devices are not offered for selection. A missing or
+ambiguous device in a non-interactive environment is an error; the script does
+not silently choose a target. No version bump or Play Console upload is
+performed.
+
+**Signing note:** the AAB uses the configured upload key, but the generated
+APK uses bundletool's local debug signing. It cannot be installed as an update
+to an app signed by a different key, for example a Google Play installation.
+The command never uninstalls anything automatically, so app data is protected.
+If you intentionally uninstall the old app, its local data will be lost.
+
+`start:android` is a *release* workflow, not a fast Android debug/hot-reload
+mode. To use Android Studio for native debugging, use `open:android:studio`.
