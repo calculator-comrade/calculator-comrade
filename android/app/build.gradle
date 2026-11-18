@@ -46,8 +46,8 @@ android {
         applicationId "ru.robotmitya.comrade"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "2.0.0-rc.0"
+        versionCode 18
+        versionName "2.0.0-rc.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -70,8 +70,11 @@ android {
             if (releaseSigningFile.isFile()) {
                 signingConfig signingConfigs.release
             }
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Enable R8 shrinking, optimization and obfuscation for native DEX code.
+            minifyEnabled true
+            // Native Android resource shrinking needs separate testing for runtime references.
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

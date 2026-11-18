@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Capacitor 8.4.3: the bridge accesses plugin annotations by reflection.
+# Its consumer rules keep plugin implementations, but R8 full mode may still
+# remove annotation types, breaking plugin initialization and permissions.
+# This is redundant on newer Capacitor versions that ship the same keep rule.
+-keep @interface com.getcapacitor.** { *; }

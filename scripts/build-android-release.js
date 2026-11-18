@@ -112,7 +112,10 @@ try {
     // Invalidate the previous same-version release before doing any new work.
     const outDir = join(projectRoot, "artifacts", "android");
     const outputFile = join(outDir, `calculator-comrade-${versionName}-${versionCode}.aab`);
+    const mappingFile = join(androidDir, "app", "build", "outputs", "mapping", "release", "mapping.txt");
+    const outputMappingFile = join(outDir, `calculator-comrade-${versionName}-${versionCode}-mapping.txt`);
     rmSync(outputFile, { force: true });
+    rmSync(outputMappingFile, { force: true });
 
     // Use the JDK selected by the user's environment or CI.
     // Gradle reads JAVA_HOME directly; use absolute paths for JDK signing tools.
@@ -149,8 +152,9 @@ try {
         run("npm", ["run", "cap:sync:android"]);
     }
 
-    // Remove a previous output so stale artifacts can never be mistaken for a successful build.
+    // Remove previous outputs so stale artifacts cannot pass release verification.
     rmSync(bundlePath, { force: true });
+    rmSync(mappingFile, { force: true });
     if (process.platform === "win32") {
         // Batch wrappers require cmd.exe; the command is constant, not user input.
         run(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "gradlew.bat :app:bundleRelease"], {
@@ -160,6 +164,9 @@ try {
         run("./gradlew", [":app:bundleRelease"], { cwd: androidDir });
     }
     if (!existsSync(bundlePath) || statSync(bundlePath).size === 0) fail("Gradle did not produce a release AAB");
+    if (!existsSync(mappingFile) || statSync(mappingFile).size === 0) {
+        fail("R8 did not produce mapping.txt; check release minification in android/app/build.gradle");
+    }
 
     run(jarsigner, ["-verify", bundlePath]);
     const signedFingerprint = sha256Fingerprint(
@@ -172,8 +179,10 @@ try {
 
     mkdirSync(outDir, { recursive: true });
     copyFileSync(bundlePath, outputFile);
+    copyFileSync(mappingFile, outputMappingFile);
     const sha = createHash("sha256").update(readFileSync(outputFile)).digest("hex");
     console.log(`\nSigned AAB ready: ${outputFile}`);
+    console.log(`R8 mapping saved: ${outputMappingFile}`);
     console.log(`Version: ${versionName}; versionCode: ${versionCode}; applicationId: ${applicationId}`);
     console.log(`Upload certificate SHA-256: ${signedFingerprint}`);
     console.log(`AAB file SHA-256: ${sha}`);

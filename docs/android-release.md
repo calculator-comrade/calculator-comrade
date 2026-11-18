@@ -138,3 +138,115 @@ Check your configuration from the same terminal where you build:
 
 After installing a JDK while an existing Gradle Daemon is running, you may
 need to run `gradlew --stop` once so Gradle re-detects the compiler.
+
+## R8 DEX optimization (release only)
+
+`android/app/build.gradle` enables R8 for `release` builds:
+
+- `minifyEnabled true` performs native Java/Kotlin/DEX shrinking, code
+  optimization and obfuscation.
+- `proguard-android-optimize.txt` permits code optimization; the older
+  `proguard-android.txt` file disables important R8 optimizations.
+- Android resource shrinking remains disabled until runtime-only resource
+  references have been checked. This setting does not disable DEX code shrinking.
+- `android/app/proguard-rules.pro` keeps Capacitor annotation types used
+  through reflection in Capacitor 8.4.3. Do not broadly keep the entire app,
+  Capacitor, or AndroidX packages, as this would defeat R8 optimization.
+
+The release script requires an R8 `mapping.txt` and saves a versioned copy
+alongside the signed AAB in `artifacts/android/`. Keep that mapping file with
+its corresponding release for retracing obfuscated native stack traces.
+The AAB also contains Google Play's native-code mapping metadata.
+
+To inspect the optimization metadata in a newly built AAB (when present):
+
+```bash
+unzip -p artifacts/android/calculator-comrade-VERSION-VERSION_CODE.aab \
+  BUNDLE-METADATA/com.android.tools/r8.json
+```
+
+**Test the release variant on a device before uploading it.** Debug builds
+have R8 disabled and will not reveal reflection/annotation issues. In particular,
+verify Calculator startup, sounds/haptics, Settings, and Rate App / Share App.
+
+Google Play reserves previously uploaded version codes. This source snapshot is at `2.0.0-rc.1` / code `18`. Before uploading a newer
+AAB, increase to a versionCode not previously uploaded to Play Console (for
+example via `npm version prerelease --preid=rc`).
+
+## Local DEX optimization analysis (optional)
+
+Install the official [Android CLI](https://developer.android.com/tools/agents/android-cli)
+if you want optimization metrics without uploading the AAB to Google Play.
+The analyzer is **not** required for building or signing releases.
+
+Run from the repository root:
+
+```bash
+# Analyze the newest AAB in artifacts/android/
+npm run android:analyze
+
+# Analyze a specific AAB, without changing its versionCode
+npm run android:analyze -- artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
+
+# Compare versions: write a separate report for each AAB
+npm run android:analyze -- artifacts/android/calculator-comrade-2.0.0-rc.0-17.aab artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
+```
+
+For each AAB, the script executes Google's `android analyze --analysis=optimization`
+in both human-readable and JSON modes. It prints the official human-readable output
+and saves these adjacent to the analyzed AAB:
+
+```text
+calculator-comrade-VERSION-VERSION_CODE-analysis.md
+calculator-comrade-VERSION-VERSION_CODE-analysis.json
+```
+
+The Markdown report includes AGP/R8 versions, DEX size, shrinking, optimization,
+obfuscation, heuristic obfuscation when reported, full tool output, and the AAB
+SHA-256. The JSON file contains the **original analyzer data** formatted for
+readability (its schema is owned by the Android CLI). If R8 is disabled, the
+corresponding metrics remain *Not reported* rather than being invented.
+
+If `android` is not found in `PATH`, the command prints a notice and returns
+success without producing reports. If Android CLI is installed but analysis
+fails, the command exits with an error. This is separate from the release build.
+
+## Generate a test APK from an existing AAB
+
+Install [bundletool](https://github.com/google/bundletool/releases) once.
+Set the environment variable `BUNDLETOOL_JAR` to the JAR path (absolute, or
+relative to the project root). This is the only supported configuration method.
+The script does not pin a bundletool version or download executables automatically.
+It uses `JAVA_HOME` for Java and JDK `jar` on Windows/Linux/macOS.
+
+```bash
+# Uses the most recently modified AAB in artifacts/android/
+npm run android:apk
+
+# Or explicitly select an AAB, without bumping versionCode
+npm run android:apk -- artifacts/android/calculator-comrade-2.0.0-rc.1-18.aab
+```
+
+For an input `calculator-comrade-VERSION-CODE.aab`, the command writes:
+
+```text
+artifacts/android/calculator-comrade-VERSION-CODE.apks
+artifacts/android/calculator-comrade-VERSION-CODE.apk
+```
+
+The APK is a **universal APK** generated from the release AAB through bundletool,
+so it contains the same R8-optimized native code. bundletool automatically signs
+it with a **debug key**, since no release signing information is provided.
+No upload-keystore passwords are requested. Install it with:
+
+```bash
+adb install -r artifacts/android/calculator-comrade-VERSION-CODE.apk
+```
+
+An APK with this debug signature **cannot update** a Google Play installation
+(or another APK signed with a different certificate). On a test device, uninstall
+the existing `ru.robotmitya.comrade` package first if signatures differ; this
+removes its local app data. Google Play delivers APKs signed with Google's
+**app signing key**, which can differ from the upload key used for our AAB.
+For testing the actual Play-signed APK and in-store features, use a Play
+testing track. This command never uploads to Google Play or modifies the AAB.
