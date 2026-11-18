@@ -92,6 +92,9 @@ npm run build:desktop:linux     # Build Linux packages on a Linux host.
 npm run build:desktop:windows   # Build a Windows installer on a Windows host.
 ```
 
+Each desktop build command checks the host OS and stops if it does not match
+its target platform; cross-compilation is not configured.
+
 ## 8. Commit and publish the website
 
 After checks pass, review the changes, then **commit and tag manually**:

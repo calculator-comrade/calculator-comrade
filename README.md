@@ -99,7 +99,10 @@ Desktop packages are built on the matching host operating system:
 - build the Linux app on a Linux host;
 - build the Windows app on a Windows host.
 
-Cross-compilation is not the default workflow for this project.
+The `build:desktop:linux` and `build:desktop:windows` commands check the host
+OS before starting the frontend or native build. A mismatched host produces an
+error instead of silently building a binary for the host platform.
+Cross-compilation is not configured for these commands.
 
 ### Common requirements
 
@@ -170,8 +173,8 @@ Use the explicit platform build scripts instead of relying on the default Tauri
 bundle target list:
 
 ```json
-"build:desktop:linux": "tauri build --bundles deb,appimage",
-"build:desktop:windows": "tauri build --bundles nsis"
+"build:desktop:linux": "node scripts/check-desktop-build-platform.js linux && tauri build --bundles deb,appimage",
+"build:desktop:windows": "node scripts/check-desktop-build-platform.js windows && tauri build --bundles nsis"
 ```
 
 The frontend-only desktop build is still available separately:
