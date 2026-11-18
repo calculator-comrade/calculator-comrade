@@ -4,7 +4,7 @@
   "version": "../package.json",
   "identifier": "io.github.calculator-comrade",
   "build": {
-    "frontendDist": "../dist",
+    "frontendDist": "../dist/desktop",
     "devUrl": "http://127.0.0.1:5174",
     "beforeDevCommand": "npm run dev:desktop",
     "beforeBuildCommand": "npm run build:desktop"

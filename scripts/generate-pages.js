@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { openGraphImagePath, routeDefinitions, siteBaseUrl } from "../src/shared/routeDefinitions.ts";
 
-const distDir = resolve("dist");
+const distDir = resolve("dist", "pages");
 const indexHtml = resolve(distDir, "index.html");
 const ssgOutputDir = resolve(distDir, ".ssg");
 const serverEntry = resolve(ssgOutputDir, "entry-server.js");

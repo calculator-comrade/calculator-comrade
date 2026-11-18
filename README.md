@@ -59,9 +59,9 @@ The Android project lives in:
 android/
 ```
 
-The Android Vite mode uses relative asset paths, the same as the desktop mode,
-because the application is loaded by the native WebView from packaged local
-assets.
+The Android Vite mode writes frontend assets to `dist/android/`, which is also
+the `webDir` configured for Capacitor. It uses relative asset paths, the same
+as desktop mode, because the native WebView loads packaged local assets.
 
 The first Android implementation uses Capacitor for the native shell, browser
 links, sharing and haptic feedback. Short calculator sounds still use the
@@ -115,8 +115,23 @@ npm run build
 npm run preview
 ```
 
-Do not open files from `dist/` directly in a browser. The built application is
-expected to be served by a web server, even for local testing.
+Do not open files from `dist/web/` directly in a browser. The built application
+is expected to be served by a web server, even for local testing.
+
+Each Vite build has its own output directory:
+
+```text
+dist/
+  web/       # npm run build; npm run preview
+  pages/     # npm run build:pages; npm run preview:pages; GitHub Pages
+  desktop/   # npm run build:desktop; Tauri frontend
+  android/   # npm run build:android; Capacitor webDir
+```
+
+Building one target does **not** overwrite the output of another target. The
+Pages build additionally creates a temporary `dist/pages/.ssg/` directory for
+server-side rendering, which is removed after prerendering. All directories
+under `dist/` remain Git-ignored.
 
 ### Desktop development
 
@@ -147,12 +162,13 @@ npm run build:desktop
 It writes the Vite output to:
 
 ```text
-dist/
+dist/desktop/
 ```
 
 This command only builds the frontend assets for the desktop mode. It does not
-create a native executable or installer, and the generated `dist/` directory
-still needs to be served by a web server if you want to inspect it in a browser.
+create a native executable or installer, and the generated `dist/desktop/`
+directory still needs to be served by a web server if you want to inspect it
+in a browser.
 
 The full Tauri build creates a native executable and then packages it for the
 selected platform.
@@ -271,7 +287,9 @@ npm run build:pages
 npm run preview:pages
 ```
 
-Open `http://localhost:4173/calculator-comrade/` to preview the Pages build.
+The static site is built in `dist/pages/` and the GitHub Pages deployment uploads
+**only** that directory. Open `http://localhost:4173/calculator-comrade/` to
+preview the Pages build, even after building Android or desktop assets.
 The shared page metadata and route paths are defined in
 `src/shared/routeDefinitions.ts`. The build script
 `scripts/generate-pages.js` adds per-page titles, descriptions, canonical URLs,

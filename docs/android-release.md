@@ -97,6 +97,18 @@ sufficient privileges), so use a trusted local machine and do not enable
 verbose logging of the build environment. Press Ctrl+C or Escape to cancel
 during password entry.
 
+## Isolated frontend build output
+
+`npm run build:android` writes its Vite assets to `dist/android/`.
+`npm run cap:sync:android` syncs this directory because
+`capacitor.config.ts` sets `webDir: "dist/android"`.
+
+The other builds are isolated: `dist/web/`, `dist/pages/`, and
+`dist/desktop/`. Running a subsequent web, Pages, or desktop build does not
+replace the Android frontend, and a new Android build does not invalidate the
+last Pages preview. The signed release AAB/APK files still go to
+`artifacts/android/`, unchanged.
+
 ## Java used for Android release builds
 
 Set `JAVA_HOME` in your OS or CI configuration to the root directory of a

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { openGraphImagePath, routeDefinitions, siteBaseUrl } from "../src/shared/routeDefinitions.ts";
 
-const distDir = resolve("dist");
+const distDir = resolve("dist", "pages");
 const imageUrl = new URL(openGraphImagePath, siteBaseUrl).href;
 
 function escapeHtml(value) {

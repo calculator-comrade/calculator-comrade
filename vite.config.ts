@@ -12,6 +12,15 @@ const CALCULATOR_WASM_GLUE_OUTPUT_PATH = "public/wasm/calculator.compat.js";
 
 export default defineConfig(({ mode }) => {
     const isPackagedApp = mode === "desktop" || mode === "android";
+    // Keep each target's output isolated. A build must never overwrite
+    // the static website, Android WebView assets, or desktop frontend.
+    const outDir = mode === "pages"
+        ? "dist/pages"
+        : mode === "android"
+            ? "dist/android"
+            : mode === "desktop"
+                ? "dist/desktop"
+                : "dist/web";
 
     writeCompatibleCalculatorWasmGlue(process.cwd());
 
@@ -23,6 +32,7 @@ export default defineConfig(({ mode }) => {
                     ? "./"
                     : "/",
         build: {
+            outDir,
             target: "chrome69",
             cssTarget: "chrome69",
         },

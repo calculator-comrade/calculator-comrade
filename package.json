@@ -10,7 +10,7 @@
     "version": "node scripts/sync-app-version.js",
     "version:sync": "node scripts/sync-app-version.js",
     "build": "tsc -b && vite build",
-    "build:pages": "tsc -b && vite build --mode pages && vite build --mode pages --ssr src/site/entry-server.tsx --outDir dist/.ssg && node scripts/generate-pages.js && npm run test:ssg",
+    "build:pages": "tsc -b && vite build --mode pages && vite build --mode pages --ssr src/site/entry-server.tsx --outDir dist/pages/.ssg && node scripts/generate-pages.js && npm run test:ssg",
     "build:desktop": "tsc -b && vite build --mode desktop",
     "build:android": "tsc -b && vite build --mode android",
     "lint": "eslint .",
