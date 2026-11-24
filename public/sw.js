@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "calculator-comrade-";
-const CACHE_NAME = `${CACHE_PREFIX}v4`;
+const CACHE_NAME = `${CACHE_PREFIX}v5`;
 const BASE_PATH = new URL(self.registration.scope).pathname;
 const ASSET_MANIFEST_PATH = "asset-manifest.json";
 
@@ -11,6 +11,7 @@ self.addEventListener("install", (event) => {
             const assetManifest = await getAssetManifest();
             const staticAssets = [
                 toScopedUrl(ASSET_MANIFEST_PATH),
+                toScopedUrl("calculator/"),
                 ...assetManifest.precache.map(toScopedUrl),
             ];
 

@@ -8,6 +8,15 @@ const imageUrl = new URL(openGraphImagePath, siteBaseUrl).href;
 
 assert.equal(siteBaseUrl, "https://calculator-comrade.github.io/", "Unexpected public site URL");
 
+const manifest = JSON.parse(readFileSync(resolve(distDir, "manifest.webmanifest"), "utf8"));
+const manifestUrl = new URL("manifest.webmanifest", siteBaseUrl);
+const startUrl = new URL(manifest.start_url, manifestUrl);
+assert.equal(startUrl.href, new URL(routeDefinitions.calculator.path, siteBaseUrl).href,
+    "PWA: start URL must open the calculator");
+assert.equal(manifest.id, "/", "PWA: stable application ID missing");
+assert.equal(new URL(manifest.scope, manifestUrl).href, siteBaseUrl, "PWA: scope must cover the whole site");
+assert.equal(manifest.display, "standalone", "PWA: display mode must remain standalone");
+
 function checkRootAssets(html, routeKey) {
     assert.ok(!html.includes("https://calculator-comrade.github.io/calculator-comrade/") &&
         !/(?:href|src|data-ssg-path)="\/calculator-comrade\//.test(html),
