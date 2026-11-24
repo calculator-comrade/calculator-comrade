@@ -1,4 +1,5 @@
-const CACHE_NAME = "calculator-comrade-v3";
+const CACHE_PREFIX = "calculator-comrade-";
+const CACHE_NAME = `${CACHE_PREFIX}v4`;
 const BASE_PATH = new URL(self.registration.scope).pathname;
 const ASSET_MANIFEST_PATH = "asset-manifest.json";
 
@@ -30,7 +31,7 @@ self.addEventListener("activate", (event) => {
 
             await Promise.all(
                 cacheNames
-                    .filter((cacheName) => cacheName !== CACHE_NAME)
+                    .filter((cacheName) => cacheName.startsWith(CACHE_PREFIX) && cacheName !== CACHE_NAME)
                     .map((cacheName) => caches.delete(cacheName)),
             );
 
@@ -150,10 +151,12 @@ async function findCachedResponse(request) {
             ? new URL(request, self.location.origin)
             : new URL(request.url);
 
+    const cache = await caches.open(CACHE_NAME);
+
     return (
-        await caches.match(request) ??
-        await caches.match(requestUrl.href) ??
-        await caches.match(requestUrl.pathname)
+        await cache.match(request) ??
+        await cache.match(requestUrl.href) ??
+        await cache.match(requestUrl.pathname)
     );
 }
 

@@ -1,3 +1,4 @@
+import { siteRouteUrl } from "../../shared/routeDefinitions.ts";
 import type { CalculatorAppSettings } from "../../app/settings/calculatorAppSettings.ts";
 import {
     type CalculatorAppActions,
@@ -14,11 +15,6 @@ import {
 } from "./desktopCalculatorStorage.ts";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-const DESKTOP_HOME_URL = "https://calculator-comrade.github.io/calculator-comrade/";
-const DESKTOP_HELP_URL = "https://calculator-comrade.github.io/calculator-comrade/tips-n-tricks/";
-const DESKTOP_LICENSE_URL = "https://calculator-comrade.github.io/calculator-comrade/license/";
-const DESKTOP_PRIVACY_POLICY_URL = "https://calculator-comrade.github.io/calculator-comrade/privacy-policy/";
-const DESKTOP_TERMS_OF_USE_URL = "https://calculator-comrade.github.io/calculator-comrade/terms-of-use/";
 
 function openExternalUrl(url: string): void {
     void openUrl(url).catch((error: unknown) => {
@@ -37,11 +33,11 @@ export function createDesktopCalculatorAppActions(
 
     return {
         openHome: () => {
-            openExternalUrl(DESKTOP_HOME_URL);
+            openExternalUrl(siteRouteUrl("home"));
         },
 
         openHelp: () => {
-            openExternalUrl(DESKTOP_HELP_URL);
+            openExternalUrl(siteRouteUrl("tips"));
         },
 
         openSettings: options.openSettings ?? (() => {
@@ -51,15 +47,15 @@ export function createDesktopCalculatorAppActions(
         }),
 
         openLicense: () => {
-            openExternalUrl(DESKTOP_LICENSE_URL);
+            openExternalUrl(siteRouteUrl("license"));
         },
 
         openPrivacyPolicy: () => {
-            openExternalUrl(DESKTOP_PRIVACY_POLICY_URL);
+            openExternalUrl(siteRouteUrl("privacy"));
         },
 
         openTermsOfUse: () => {
-            openExternalUrl(DESKTOP_TERMS_OF_USE_URL);
+            openExternalUrl(siteRouteUrl("terms"));
         },
 
         isVibrationAvailable: () => false,

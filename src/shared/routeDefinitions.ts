@@ -1,6 +1,6 @@
 // Route definitions shared by the application and the GitHub Pages build.
 // Paths are relative to the deployment base URL.
-export const siteBaseUrl = "https://calculator-comrade.github.io/calculator-comrade/";
+export const siteBaseUrl = "https://calculator-comrade.github.io/";
 export const openGraphImagePath = "screenshots/screenshot-wide.png";
 
 type RouteDefinition = {
@@ -67,3 +67,8 @@ export const routeDefinitions = {
 export const routePaths = Object.fromEntries(
     Object.entries(routeDefinitions).map(([key, definition]) => [key, definition.path]),
 ) as { [K in keyof typeof routeDefinitions]: (typeof routeDefinitions)[K]["path"] };
+
+// Absolute public URLs for native app shells and generated site metadata.
+export function siteRouteUrl(route: keyof typeof routeDefinitions): string {
+    return new URL(routeDefinitions[route].path, siteBaseUrl).href;
+}

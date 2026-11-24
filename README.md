@@ -311,24 +311,37 @@ npm run build:pages
 npm run start:pages
 ```
 
-The static site is built in `dist/pages/` and the GitHub Pages deployment uploads
-**only** that directory. Open `http://localhost:4173/calculator-comrade/` to
+The static site is built in `dist/pages/`. Open `http://localhost:4173/` to
 preview the Pages build, even after building Android or desktop assets.
+
+On pushes to `master`, `.github/workflows/deploy-pages.yml` builds and checks
+that directory, then publishes its contents to `site/` in the public
+`calculator-comrade/calculator-comrade.github.io` deployment repository. The
+workflow also copies the deployment-only workflow from
+`.github/pages-deployment/deploy-pages.yml` to the destination repository.
+The destination's GitHub Pages source must be set to **GitHub Actions**;
+its workflow uploads `site/` as the Pages artifact without rebuilding it.
+
+The source repository requires the `PAGES_DEPLOY_KEY` Actions secret: a private
+SSH key whose public counterpart is a write-enabled deploy key on the
+destination repository only. The destination must be empty or have a `master`
+branch (set as its default). Do not edit generated site files in the destination.
 The shared page metadata and route paths are defined in
 `src/shared/routeDefinitions.ts`. The build script
 `scripts/generate-pages.js` adds per-page titles, descriptions, canonical URLs,
 Open Graph tags, and `noindex` for non-indexable pages. All generated HTML
-files reference the same Vite-built application assets. This is not static
-rendering of the React page content.
+files reference the same Vite-built application assets. The informational pages
+are prerendered; calculator and settings routes are client-rendered.
 
 For search engines, the public sitemap URL is:
 
 ```text
-https://calculator-comrade.github.io/calculator-comrade/sitemap.xml
+https://calculator-comrade.github.io/sitemap.xml
 ```
 
 After deploying, use Google Search Console to verify ownership of the site,
-submit that sitemap URL, and inspect the home, calculator and tips URLs.
+submit that sitemap URL, and inspect/request indexing for each of the six
+indexable URLs in the sitemap.
 Search Console requires access to the account controlling site verification;
 local build checks cannot verify search engine indexing.
 

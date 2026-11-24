@@ -25,12 +25,7 @@ export default defineConfig(({ mode }) => {
     writeCompatibleCalculatorWasmGlue(process.cwd());
 
     return {
-        base:
-            mode === "pages"
-                ? "/calculator-comrade/"
-                : isPackagedApp
-                    ? "./"
-                    : "/",
+        base: isPackagedApp ? "./" : "/",
         build: {
             outDir,
             target: "chrome69",
