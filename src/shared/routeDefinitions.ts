@@ -64,8 +64,13 @@ export const routeDefinitions = {
 } as const satisfies Record<string, RouteDefinition>;
 
 // Preserve the simple path lookup used by the application.
-export const routePaths = Object.fromEntries(
-    Object.entries(routeDefinitions).map(([key, definition]) => [key, definition.path]),
+// Object.fromEntries is unavailable on Android WebView 69.
+export const routePaths = Object.entries(routeDefinitions).reduce<Record<string, string>>(
+    (paths, [key, definition]) => {
+        paths[key] = definition.path;
+        return paths;
+    },
+    {},
 ) as { [K in keyof typeof routeDefinitions]: (typeof routeDefinitions)[K]["path"] };
 
 // Absolute public URLs for native app shells and generated site metadata.
