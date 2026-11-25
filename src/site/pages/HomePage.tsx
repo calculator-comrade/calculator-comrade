@@ -97,6 +97,67 @@ export function HomePage() {
                     </li>
                 </ol>
             </section>
+
+            <section>
+                <h2>How to install Calculator Comrade</h2>
+                <h3>Android app</h3>
+                <p>Get the native Android app on Google Play:</p>
+                <p>
+                    <a
+                        href="https://play.google.com/store/apps/details?id=ru.robotmitya.comrade"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <img
+                            src={assetUrl("images/google-play-badge.svg")}
+                            alt="Get it on Google Play"
+                            style={{ width: 180, maxWidth: "100%", height: "auto", display: "block" }}
+                        />
+                    </a>
+                </p>
+
+                <h3>Web app (PWA)</h3>
+                <p>
+                    You can also install Calculator Comrade directly from your browser as a
+                    Progressive Web App (PWA), without using an app store. It can work offline
+                    once the necessary resources have been loaded.
+                </p>
+                <p>
+                    Open the <a href={routes.calculator}>calculator</a> in your browser and follow
+                    the instructions for your device:
+                </p>
+                <ul>
+                    <li>
+                        <strong>Chrome or Edge on desktop:</strong> click the install icon in the
+                        address bar and confirm the installation.
+                    </li>
+                    <li>
+                        <strong>Chrome on Android:</strong> open the browser menu and choose the
+                        option to install the app (or add it to your home screen).
+                    </li>
+                    <li>
+                        <strong>Firefox on Android:</strong> open the browser menu, select Install,
+                        and add the app to your home screen.
+                    </li>
+                    <li>
+                        <strong>Firefox on desktop:</strong> use the web app icon in the address bar
+                        if available. Support depends on your operating system and browser version.
+                    </li>
+                    <li>
+                        <strong>Safari on iPhone or iPad:</strong> open the Share menu, select Add to
+                        Home Screen, enable Open as Web App if offered, and tap Add.
+                    </li>
+                    <li>
+                        <strong>Safari on Mac (macOS Sonoma or later):</strong> choose Add to Dock
+                        from the File or Share menu.
+                    </li>
+                </ul>
+                <p>
+                    If your browser does not offer installation, you can still use the calculator
+                    directly in a browser tab. Features such as vibration depend on your browser
+                    and device.
+                </p>
+            </section>
         </article>
     );
 }
