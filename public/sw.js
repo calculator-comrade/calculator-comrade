@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "calculator-comrade-";
-const CACHE_NAME = `${CACHE_PREFIX}v7`;
+const CACHE_NAME = `${CACHE_PREFIX}v9`;
 const BASE_PATH = new URL(self.registration.scope).pathname;
 const ASSET_MANIFEST_PATH = "asset-manifest.json";
 

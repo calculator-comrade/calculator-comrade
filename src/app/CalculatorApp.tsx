@@ -21,6 +21,7 @@ import { routes } from "../shared/routes.ts";
 import { goBackOrReplace, navigateTo } from "../platforms/web/webNavigation.ts";
 import { listenDesktopWindowSize } from "../platforms/desktop/logDesktopWindowSize.ts";
 import {
+    isAppStartupReady,
     markAppStartupReady,
     preloadCalculatorFirstPaintAssets,
     waitForCalculatorFirstPaintReady,
@@ -102,12 +103,12 @@ export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
         void preloadCalculatorFirstPaintAssets();
     }, []);
 
-    useEffect(() => {
-        if (calculator.loading || !appSettings.settingsLoaded) {
-            return undefined;
-        }
+    const calculatorStartupReady = !calculator.loading
+        && appSettings.settingsLoaded
+        && (calculator.display !== null || calculator.error !== null);
 
-        if (calculator.display === null && calculator.error === null) {
+    useEffect(() => {
+        if (!calculatorStartupReady || isAppStartupReady()) {
             return undefined;
         }
 
@@ -124,12 +125,7 @@ export function CalculatorApp({ settingsDialogOpen }: CalculatorAppProps) {
         return () => {
             disposed = true;
         };
-    }, [
-        appSettings.settingsLoaded,
-        calculator.display,
-        calculator.error,
-        calculator.loading,
-    ]);
+    }, [calculatorStartupReady]);
 
 
     const isButtonPressed = useCallback(

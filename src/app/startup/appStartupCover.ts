@@ -31,6 +31,10 @@ export async function waitForCalculatorFirstPaintReady(): Promise<void> {
     await waitForAnimationFrame();
 }
 
+export function isAppStartupReady(): boolean {
+    return appStartupReadyMarked;
+}
+
 export function markAppStartupReady(): void {
     if (appStartupReadyMarked) {
         return;
