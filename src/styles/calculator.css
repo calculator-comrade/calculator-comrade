@@ -264,6 +264,9 @@
     width: 139px;
     height: 420px;
 
+    background-repeat: no-repeat;
+    background-size: 1550px 420px;
+
     transform: translate(-50%, -50%);
 }
 
@@ -391,6 +394,10 @@
 .calculator-display-symbol--active {
     opacity: 1;
     filter: brightness(0);
+}
+
+.calculator-display-symbol--off {
+    opacity: 0;
 }
 
 .calculator-app-button {
